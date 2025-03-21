@@ -1,0 +1,90 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+---
+description: Rules for Arma 3 SQF code refactoring
+globs: ["*.sqf"]
+alwaysApply: true
+---
+
+# Arma 3 SQF Refactoring Rules
+
+## Function Scope and Testing
+- Work on one function at a time to ensure proper testing between changes
+- After refactoring a function, stop and wait for approval before proceeding to the next
+- Analyze function dependencies before changing any code to understand potential impacts
+- Do not create new functions 
+
+## Code Formatting
+- Use 4-space indentation consistently throughout all files
+- Place opening and closing braces on their own lines
+- Keep line length under 120 characters when possible
+- Use consistent spacing around operators: `a = b` instead of `a=b`
+- Always use semicolons to terminate statements
+
+## Function Headers
+- Every function must include a standardized header:
+```
+/*
+    Function: function_name
+    
+    Description:
+        Brief description of what the function does
+    
+    Parameters:
+        _param1 - Description of parameter 1
+        _param2 - Description of parameter 2
+    
+    Returns:
+        What the function returns, if anything
+    
+    Examples:
+        (begin example)
+        _result = [_param1, _param2] call function_name
+        (end)
+    
+    Author: [NZF] JD Wang
+    Date: YYYY-MM-DD
+*/
+```
+
+## Code Style
+- Use meaningful variable names with Hungarian notation (prefix with underscore for local variables)
+- Avoid inline functions in favor of separate function definitions
+- Group related variables together with comments explaining their purpose
+- Explicitly return values with the `exitWith` command or at the end of the function
+- Use descriptive comments for complex logic or non-obvious code sections
+
+## Variable Naming
+- Use camelCase for variable names
+- Prefix local variables with underscore (_variableName)
+- Use ALL_CAPS for constants
+- Use descriptive and specific names that explain the purpose
+
+## Error Prevention
+- Use the `params` command for function parameters with type checking where possible
+- Include error handling for important functions
+- Check if variables exist before attempting to use them
+- Avoid using global variables when possible
+- Use proper scoping (private, private _varName = value;)
+
+## Documentation and Comments
+- Comment any complex logic or non-obvious code
+- Document all function parameters and return values
+- Include examples of function usage where helpful
+- Add TODO comments for future improvements
+- Use block comments for large sections and line comments for single lines
+
+## Code Organization
+- Keep related functions in the same file
+- Organize code in a logical manner with similar functionality grouped together
+- Separate UI functions from logic functions when possible
+- Follow ACE3 and CBA best practices for compatibility
+
+## Testing Considerations
+- Ensure changes maintain backward compatibility
+- Test functions after refactoring to verify functionality
+- Verify impact on performance for frequently called functions

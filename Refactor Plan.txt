@@ -1,0 +1,143 @@
+# NZF Liberation Refactoring Plan
+
+## Overview
+This document outlines a comprehensive plan to modernize the NZF Liberation mission by implementing current standards and practices from ACE3 and CBA_A3. The mission currently uses a mix of older coding practices with some ACE3/CBA integration, but needs significant refactoring for improved performance, maintainability, and adherence to modern standards.
+
+- After refactoring a function, stop and wait for approval before proceeding to the next
+- Do not create new functions 
+
+## Priority 1: Performance Improvements
+
+### 1.1 Replace sleep/waitUntil with CBA Event System
+High Priority: Replace all sleep, waitUntil, and uiSleep commands with CBA's event system to improve performance.
+
+- Replace `sleep` with `[{code}, nil, delay]` call `CBA_fnc_waitAndExecute`
+- Replace `waitUntil {condition}` with `[{code}, {condition}] call CBA_fnc_waitUntilAndExecute`
+- Replace spawned loops with `CBA_fnc_addPerFrameHandler`
+
+Affected files (partial list, many more exist):
+- scripts/shared/kill_manager.sqf
+- scripts/shared/diagnostics.sqf
+- scripts/server/sector/attack_in_progress_fob.sqf
+- scripts/server/sector/manage_one_sector.sqf
+- scripts/server/resources/manage_resources.sqf
+- scripts/server/resources/manage_logistics.sqf
+
+### 1.2 Optimize AI Handling and Spawning
+- Implement CBA's Task system for AI objectives
+- Utilize ACE's AI features for more efficient AI behavior
+
+### 1.3 Implement CBA Settings Framework
+- Convert all mission parameters to use CBA_settings_fnc_init
+- Create a proper settings framework that allows server-side configuration
+- Implement proper settings synchronization between clients
+
+## Priority 2: Code Structure and Organization
+
+### 2.1 Restructure Function Framework
+- Reorganize all functions to follow proper CBA/ACE3 function naming convention (prefix_component_fnc_functionName)
+- Convert all scripts into proper functions
+- Implement proper function headers with documentation
+- Use CBA_fnc_compileFunction for dynamic function compilation
+
+Example implementation:
+```sqf
+/*
+ * Author: [Name]
+ * [Description]
+ *
+ * Arguments:
+ * 0: First argument <TYPE>
+ * 1: Second argument <TYPE>
+ *
+ * Return Value:
+ * Return value <TYPE>
+ *
+ * Example:
+ * [_player] call nzf_liberation_fnc_exampleFunction
+ */
+```
+
+### 2.2 Convert Spawn to Scheduled Function Calls
+- Replace all `spawn` calls with proper CBA function structure
+- Implement CBA's PFH (Per Frame Handler) for loops
+- Remove all script-based execution in favor of function calls
+
+### 2.3 Implement Proper Error Handling
+- Add try/catch functionality using CBA macros
+- Add proper logging with CBA's logging functions
+- Implement versioning system for compatibility checks
+
+## Priority 3: Modernize Game Systems
+
+### 3.1 ACE3 Integration Improvements
+- Fully integrate ACE Medical system
+- Implement ACE Cargo for logistics
+- Utilize ACE Interaction menu for all player interactions
+- Properly implement ACE Actions for all mission-specific actions
+
+### 3.2 CBA Event-Based Communication
+- Replace all publicVariable calls with CBA event system
+- Implement proper event handlers for mission events
+- Create a centralized event management system
+
+### 3.3 Optimize Resource System
+- Implement a more efficient resource calculation system
+- Replace periodic checks with event-based triggers
+- Optimize storage and retrieval of resources
+
+## Priority 4: UI and UX Improvements
+
+### 4.1 Modern UI Framework
+- Implement CBA UI components
+- Replace all dialog-based UI with modern, responsive interfaces
+- Improve performance of UI updates with event-driven architecture
+
+### 4.2 Improve Player Feedback
+- Implement CBA Notifications for important events
+- Use ACE3 hint system for player feedback
+- Create more intuitive command interfaces
+
+## Priority 5: Bug Fixes and Technical Debt
+
+### 5.1 Identify and Fix Known Issues
+- Review and fix all script errors and warnings
+- Address performance bottlenecks
+- Fix logic errors in mission flow
+
+### 5.2 Code Cleanup
+- Remove unused variables and functions
+- Standardize code formatting
+- Improve code readability
+- Remove redundant code
+
+## Implementation Strategy
+
+### Phase 1: Framework and Core Systems
+1. Implement CBA Settings Framework
+2. Convert critical loops to CBA PFH
+3. Establish new function structure
+4. Implement proper event system
+
+### Phase 2: Performance Critical Components
+1. Replace all sleep/waitUntil commands
+2. Optimize resource calculation
+3. Improve AI handling
+4. Optimize sector management
+
+### Phase 3: UI and Player Experience
+1. Improve command interface
+2. Enhance visual feedback
+3. Streamline player workflows
+4. Optimize arsenal and loadout systems
+
+### Phase 4: Final Integration and Testing
+1. Comprehensive testing of all systems
+2. Performance benchmarking
+3. Bug fixing
+4. Documentation and release
+
+## Conclusion
+This refactoring plan aims to modernize the NZF Liberation mission by implementing current standards from ACE3 and CBA_A3. The focus is on improving performance, code structure, and player experience while maintaining the core gameplay mechanics that make Liberation enjoyable.
+
+The most immediate performance gains will come from replacing sleep and waitUntil commands with CBA's event system, which will eliminate blocking calls that can cause server and client performance issues. Following this, the reorganization of the function structure and implementation of proper event-based communication will improve code maintainability and further enhance performance. 
