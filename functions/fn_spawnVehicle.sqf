@@ -59,11 +59,26 @@ if (_classname in opfor_choppers) then {
     _newvehicle = createVehicle [_classname, _spawnpos, [], 0, 'FLY'];
     _newvehicle flyInHeight (80 + (random 120));
     _newvehicle allowDamage false;
+    
+    // Log chopper creation
+    diag_log format ["[KPLIB] Spawned flying vehicle: %1 (Type: %2) at %3", _newvehicle, _classname, _spawnpos];
+
+    // Create crew
+    createVehicleCrew _newvehicle;
+
+    // Mark crew members with reference to their parent vehicle
+    {
+        _x setVariable ["KPLIB_parentVehicle", _newvehicle, true];
+        diag_log format ["[KPLIB] Crew member %1 (Type: %2) assigned to vehicle %3", _x, typeOf _x, _newvehicle];
+    } forEach (crew _newvehicle);
 } else {
     _newvehicle = _classname createVehicle _spawnpos;
     _newvehicle allowDamage false;
 
     [_newvehicle] call KPLIB_fnc_allowCrewInImmobile;
+    
+    // Log ground vehicle creation
+    diag_log format ["[KPLIB] Spawned ground vehicle: %1 (Type: %2) at %3", _newvehicle, _classname, _spawnpos];
 
     // Randomize direction and reset position and vector
     if (_rndDir) then {
@@ -71,6 +86,26 @@ if (_classname in opfor_choppers) then {
     };
     _newvehicle setPos _spawnpos;
     _newvehicle setVectorUp surfaceNormal position _newvehicle;
+
+    // Create crew
+    createVehicleCrew _newvehicle;
+    
+    // Mark crew members with reference to their parent vehicle
+    {
+        _x setVariable ["KPLIB_parentVehicle", _newvehicle, true];
+        diag_log format ["[KPLIB] Crew member %1 (Type: %2) assigned to vehicle %3", _x, typeOf _x, _newvehicle];
+    } forEach (crew _newvehicle);
+};
+
+// Explicitly set capture status to false
+_newvehicle setVariable ["KPLIB_captured", false, true];
+diag_log format ["[KPLIB] Set KPLIB_captured to false for: %1 (Type: %2)", _newvehicle, _classname];
+
+// Track the sector that spawned this vehicle
+private _nearestSector = [1000, _spawnpos] call KPLIB_fnc_getNearestSector;
+if (!isNil "_nearestSector" && {_nearestSector != ""}) then {
+    _newvehicle setVariable ["KPLIB_sectorOrigin", _nearestSector, true];
+    diag_log format ["[KPLIB] Vehicle %1 (Type: %2) associated with sector: %3", _newvehicle, _classname, _nearestSector];
 };
 
 // Clear cargo, if enabled

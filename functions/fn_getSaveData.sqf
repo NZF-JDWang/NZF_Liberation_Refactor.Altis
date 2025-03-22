@@ -204,5 +204,7 @@ private _weights = [
     resources_intel,
     _allMines,
     _allCrates,
-    KPLIB_sectorTowers
+    KPLIB_sectorTowers,
+    if (isNil "KPLIB_persistent_sectors") then {createHashMap} else {KPLIB_persistent_sectors},
+    if (isNil "KPLIB_activated_sectors") then {[]} else {KPLIB_activated_sectors}
 ] // return

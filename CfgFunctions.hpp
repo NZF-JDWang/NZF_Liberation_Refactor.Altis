@@ -68,6 +68,7 @@ class KPLIB {
         class log                       {};
         class potatoScan                {};
         class protectObject             {};
+        class saveSectorUnits           {};
         class secondsToTimer            {};
         class setDiscordState           {};
         class setFobMass                {};
@@ -81,6 +82,7 @@ class KPLIB {
         class spawnGuerillaGroup        {};
         class spawnMilitaryPostSquad    {};
         class spawnMilitiaCrew          {};
+        class spawnPersistentUnits      {};
         class spawnRegularSquad         {};
         class spawnVehicle              {};
         class swapInventory             {};

@@ -196,6 +196,8 @@ if (!isNil "_saveData") then {
         _allMines                                   = _saveData param [19, []];
         _allCrates                                  = _saveData param [20, []];
         KPLIB_sectorTowers                          = _saveData param [21, []];
+        KPLIB_persistent_sectors                    = _saveData param [22, createHashMap];
+        KPLIB_activated_sectors                     = _saveData param [23, []];
 
         stats_ammo_produced                         = _stats select  0;
         stats_ammo_spent                            = _stats select  1;

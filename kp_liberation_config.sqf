@@ -1127,3 +1127,13 @@ GRLIB_blufor_cap = (GRLIB_blufor_cap * GRLIB_unitcap) min 100;
 GRLIB_sector_cap = GRLIB_sector_cap * GRLIB_unitcap;
 GRLIB_battlegroup_cap = GRLIB_battlegroup_cap * GRLIB_unitcap;
 GRLIB_patrol_cap = GRLIB_patrol_cap * GRLIB_unitcap;
+
+/*
+    Settings for debug features
+    For advanced users and mission developers
+*/
+KP_liberation_debug = false;
+KP_liberation_savegame_debug = 0;                       // Extra debug info in the savegame
+KP_liberation_asymmetric_debug = 0;                     // Extra debug info for asymmetric threats
+KP_liberation_logistic_debug = 0;                       // 0: Disabled - 1: Transport and Resource Cargo - 2: Also Vehicle Cargo
+KP_liberation_sectorspawn_debug = 1;                    // Extra debug info for sector spawning
