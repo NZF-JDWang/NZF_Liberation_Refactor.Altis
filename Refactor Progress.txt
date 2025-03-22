@@ -1,0 +1,27 @@
+# NZF Liberation Refactoring Progress
+
+## 2024-06-XX - Refactored diagnostics.sqf
+- Replaced waitUntil and sleep with CBA functions
+- Replaced infinite while loop with CBA_fnc_addPerFrameHandler
+- Converted to unscheduled execution model using CBA_fnc_waitUntilAndExecute
+- Added player count to diagnostics log
+- Improved performance by eliminating blocking calls
+- Removed unnecessary log entries (CBA, ACE, KP Ranks)
+
+## 2024-06-XX - Refactored kill_manager.sqf
+- Replaced sleep and waitUntil with CBA_fnc_waitAndExecute and CBA_fnc_waitUntilAndExecute
+- Consolidated redundant code into a single kill processing function
+- Optimized ACE integration by removing redundant checks (assuming ACE is always loaded)
+- Improved error handling with proper timeout for ACE killer data
+- Implemented two-phase body cleanup (hide then delete) using CBA non-blocking functions
+- Reduced code size by approximately 60% while maintaining all functionality
+
+## Files Completed
+- scripts/shared/diagnostics.sqf
+- scripts/shared/kill_manager.sqf
+
+## Files Pending Refactor
+- scripts/server/sector/attack_in_progress_fob.sqf
+- scripts/server/sector/manage_one_sector.sqf
+- scripts/server/resources/manage_resources.sqf
+- scripts/server/resources/manage_logistics.sqf

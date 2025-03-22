@@ -16,7 +16,7 @@ alwaysApply: true
 - Work on one function at a time to ensure proper testing between changes
 - After refactoring a function, stop and wait for approval before proceeding to the next
 - Analyze function dependencies before changing any code to understand potential impacts
-- Do not create new functions 
+- Do NOT create new functions unless specifically asked to do so 
 
 ## Code Formatting
 - Use 4-space indentation consistently throughout all files
@@ -77,6 +77,7 @@ alwaysApply: true
 - Include examples of function usage where helpful
 - Add TODO comments for future improvements
 - Use block comments for large sections and line comments for single lines
+- Update [Refactor Progress.txt](mdc:Refactor Progress.txt) with the changes made
 
 ## Code Organization
 - Keep related functions in the same file

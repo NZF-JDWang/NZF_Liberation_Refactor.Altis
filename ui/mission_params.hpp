@@ -303,7 +303,7 @@ class Params {
         title = $STR_PARAM_LIMITEDZEUS;
         values[] = {1, 0};
         texts[] = {$STR_PARAMS_ENABLED, $STR_PARAMS_DISABLED};
-        default = 1;
+        default = 0;
     };
     class ZeusAddEnemies {
         title = $STR_PARAM_ZEUSADDENEMIES;
@@ -327,7 +327,7 @@ class Params {
         title = $STR_PARAM_TUTORIAL;
         values[] = {1, 0};
         texts[] = {$STR_PARAMS_ENABLED, $STR_PARAMS_DISABLED};
-        default = 1;
+        default = 0;
     };
     class Spacer3 {
         title = "";
@@ -345,7 +345,7 @@ class Params {
         title = $STR_PERMISSIONS_PARAM;
         values[] = {1, 0};
         texts[] = {$STR_PARAMS_ENABLED, $STR_PARAMS_DISABLED};
-        default = 1;
+        default = 0;
     };
     class CleanupVehicles {
         title = $STR_CLEANUP_PARAM;
@@ -357,13 +357,13 @@ class Params {
         title = $STR_PARAMS_INTRO;
         values[] = {1, 0};
         texts[] = {$STR_PARAMS_ENABLED, $STR_PARAMS_DISABLED};
-        default = 1;
+        default = 0;
     };
     class DeploymentCinematic {
         title = $STR_PARAMS_DEPLOYMENTCAMERA;
         values[] = {1, 0};
         texts[] = {$STR_PARAMS_ENABLED, $STR_PARAMS_DISABLED};
-        default = 1;
+        default = 0;
     };
     class Whitelist {
         title = $STR_WHITELIST_PARAM;
