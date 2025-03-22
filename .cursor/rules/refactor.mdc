@@ -12,6 +12,13 @@ alwaysApply: true
 
 # Arma 3 SQF Refactoring Rules
 
+## Framework Assumptions
+- Always assume CBA and ACE3 are loaded and available
+- Remove any redundant code that checks if CBA or ACE are loaded
+- Replace vanilla Arma 3 functionality with CBA/ACE equivalents where appropriate
+- Use CBA event system and scheduling functions instead of vanilla alternatives
+- Do not include fallback code for when CBA/ACE are not available
+
 ## Function Scope and Testing
 - Work on one function at a time to ensure proper testing between changes
 - After refactoring a function, stop and wait for approval before proceeding to the next
@@ -84,6 +91,15 @@ alwaysApply: true
 - Organize code in a logical manner with similar functionality grouped together
 - Separate UI functions from logic functions when possible
 - Follow ACE3 and CBA best practices for compatibility
+
+## CBA Best Practices
+- Replace all `sleep` calls with `CBA_fnc_waitAndExecute`
+- Replace all `waitUntil` calls with `CBA_fnc_waitUntilAndExecute`
+- Use `CBA_fnc_addPerFrameHandler` for any code that needs to run regularly
+- Avoid scheduled execution environments
+- Never use `spawn` or `execVM`
+- Handle all timing operations through CBA's scheduling functions
+- Use CBA event system for event-based functionality
 
 ## Testing Considerations
 - Ensure changes maintain backward compatibility

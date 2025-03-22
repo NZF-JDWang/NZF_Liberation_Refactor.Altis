@@ -2,17 +2,20 @@
     File: fn_spawnVehicle.sqf
     Author: KP Liberation Dev Team - https://github.com/KillahPotatoes
     Date: 2019-12-03
-    Last Update: 2020-05-06
+    Last Update: 2023-10-15
     License: MIT License - http://www.opensource.org/licenses/MIT
 
     Description:
         Spawns a vehicle with all needed Liberation connections/dependencies.
+        Uses CBA functions to work in both scheduled and unscheduled environments.
+        All event handlers use non-blocking CBA calls for better performance.
 
     Parameter(s):
         _pos        - Position to spawn the vehicle                                         [POSITION, defaults to [0, 0, 0]]
         _classname  - Classname of the vehicle to spawn                                     [STRING, defaults to ""]
         _precise    - Selector if the vehicle should spawned precisely on given position    [BOOL, defaults to false]
         _rndDir     - Selector if the direction should be randomized                        [BOOL, defaults to true]
+        _callback   - Optional callback function to execute with vehicle as parameter       [CODE, defaults to {}]
 
     Returns:
         Spawned vehicle [OBJECT]
@@ -22,12 +25,12 @@ params [
     ["_pos", [0, 0, 0], [[]], [2, 3]],
     ["_classname", "", [""]],
     ["_precise", false, [false]],
-    ["_rndDir", true, [false]]
+    ["_rndDir", true, [false]],
+    ["_callback", {}, [{}]]
 ];
 
 if (_pos isEqualTo [0, 0, 0]) exitWith {["No or zero pos given"] call BIS_fnc_error; objNull};
 if (_classname isEqualTo "") exitWith {["Empty string given"] call BIS_fnc_error; objNull};
-if (!canSuspend) exitWith {_this spawn KPLIB_fnc_spawnVehicle};
 
 private _newvehicle = objNull;
 private _spawnpos = [];
@@ -83,14 +86,20 @@ if (_classname in militia_vehicles) then {
     private _grp = createGroup [GRLIB_side_enemy, true];
     private _crew = units (createVehicleCrew _newvehicle);
     _crew joinSilent _grp;
-    sleep 0.1;
-    {_x addMPEventHandler ["MPKilled", {_this spawn kill_manager}];} forEach _crew;
+    
+    // Add MPKilled EH to crew members
+    {_x addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];} forEach _crew;
 };
 
-// Add MPKilled and GetIn EHs and enable damage again
-_newvehicle addMPEventHandler ["MPKilled", {_this spawn kill_manager}];
-sleep 0.1;
+// Add MPKilled EH and enable damage
+_newvehicle addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];
 _newvehicle allowDamage true;
 _newvehicle setDamage 0;
 
+// Execute callback if provided
+if (!isNil "_callback" && {_callback isEqualType {}}) then {
+    [_callback, [_newvehicle]] call CBA_fnc_directCall;
+};
+
+// Return the vehicle
 _newvehicle

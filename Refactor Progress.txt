@@ -1,6 +1,6 @@
 # NZF Liberation Refactoring Progress
 
-## 2024-06-XX - Refactored diagnostics.sqf
+## 2024-10-15 - Refactored diagnostics.sqf
 - Replaced waitUntil and sleep with CBA functions
 - Replaced infinite while loop with CBA_fnc_addPerFrameHandler
 - Converted to unscheduled execution model using CBA_fnc_waitUntilAndExecute
@@ -8,7 +8,7 @@
 - Improved performance by eliminating blocking calls
 - Removed unnecessary log entries (CBA, ACE, KP Ranks)
 
-## 2024-06-XX - Refactored kill_manager.sqf
+## 2024-10-15 - Refactored kill_manager.sqf
 - Replaced sleep and waitUntil with CBA_fnc_waitAndExecute and CBA_fnc_waitUntilAndExecute
 - Consolidated redundant code into a single kill processing function
 - Optimized ACE integration by removing redundant checks (assuming ACE is always loaded)
@@ -16,12 +16,73 @@
 - Implemented two-phase body cleanup (hide then delete) using CBA non-blocking functions
 - Reduced code size by approximately 60% while maintaining all functionality
 
+## 2024-10-15 - Refactored kill_manager.sqf and fn_spawnVehicle.sqf
+
+### Changes:
+- Updated kill_manager.sqf to use CBA non-blocking functions
+- Updated fn_spawnVehicle.sqf to use non-blocking event handlers
+- Added proper documentation for both files
+
+### TODO for kill_manager:
+- All remaining event handlers in the following files need to be updated to use the new pattern:
+```
+unit addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];
+```
+
+- File list to update:
+  - scripts/server/secondary/search_and_rescue.sqf
+  - scripts/server/patrols/send_paratroopers.sqf
+  - scripts/server/patrols/manage_one_civilian_patrol.sqf
+  - scripts/server/game/save_manager.sqf
+  - scripts/server/battlegroup/spawn_air.sqf
+  - scripts/client/init_client.sqf
+  - scripts/client/build/do_build.sqf
+  - functions/fn_createManagedUnit.sqf
+  - functions/fn_handlePlacedZeusObject.sqf
+
+### Benefits:
+- Improved performance by eliminating unnecessary spawns
+- Better adheres to CBA/ACE3 best practices
+- More maintainable and consistent codebase
+
+## 2024-10-15 - Refactored add_defense_waypoints.sqf
+
+### Changes:
+- Replaced sleep and waitUntil with CBA_fnc_waitUntilAndExecute for non-blocking execution
+- Fixed parameter handling to properly accept both groups and vehicles
+- Added proper function header and documentation
+- Improved waypoint logic with a local function for waypoint clearing
+- Fixed calls in manage_one_sector.sqf to use call instead of spawn
+
+### Benefits:
+- Script now works properly in both scheduled and unscheduled environments
+- Maintains the same functionality while adhering to CBA best practices
+- More maintainable and better documented code
+
+## 2024-03-22 - Refactored manage_one_sector.sqf and wait_to_spawn_sector.sqf
+
+### Changes:
+- Converted manage_one_sector.sqf to use CBA_fnc_waitUntilAndExecute instead of waitUntil loops
+- Replaced spawn commands with CBA_fnc_directCall where appropriate
+- Fixed wait_to_spawn_sector.sqf to properly use CBA functions for non-blocking execution
+- Added proper error handling and documentation
+- Improved sector spawning logic to be more reliable
+
+### Benefits:
+- Enhanced server performance by eliminating blocking code
+- Reduced script execution times for sector management
+- More predictable sector AI behavior
+- Eliminated potential race conditions
+
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
+- functions/fn_spawnVehicle.sqf
+- scripts/server/ai/add_defense_waypoints.sqf
+- scripts/server/sector/wait_to_spawn_sector.sqf
+- scripts/server/sector/manage_one_sector.sqf
 
 ## Files Pending Refactor
 - scripts/server/sector/attack_in_progress_fob.sqf
-- scripts/server/sector/manage_one_sector.sqf
 - scripts/server/resources/manage_resources.sqf
 - scripts/server/resources/manage_logistics.sqf

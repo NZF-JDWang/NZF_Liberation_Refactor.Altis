@@ -1,19 +1,26 @@
 /*
-    Function: KPLIB_fnc_handleKill
+    Function: kill_manager
     
     Description:
         Handles all aspects of unit or vehicle destruction including statistics tracking,
         combat readiness adjustments, player death handling and body/wreck cleanup.
+        
+        This function has been updated to use CBA's non-blocking functions and should be
+        called directly rather than spawned.
     
     Parameters:
         _unit - The unit or vehicle that was killed [OBJECT]
         _killer - The unit that caused the kill [OBJECT]
     
+    Example:
+        Event Handler:
+        unit addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];
+    
     Returns:
         Nothing
     
     Author: [NZF] JD Wang
-    Date: 2023-08-15
+    Date: 2023-10-15
 */
 
 params ["_unit", "_killer"];
