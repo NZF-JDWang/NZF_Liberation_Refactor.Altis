@@ -1,5 +1,26 @@
 # NZF Liberation Refactoring Progress
 
+## 2024-10-20 - Refactored manage_resources.sqf
+- Replaced waitUntil and sleep commands with CBA equivalent functions
+- Consolidated functionality from recalculate_timer_sector.sqf into manage_resources.sqf
+- Implemented CBA_fnc_addPerFrameHandler for unscheduled execution
+- Maintained same minute-based timing for resource production
+- Added detailed logging for production timer and crate spawning
+- Eliminated scheduled execution for better performance
+- Improved comments and documentation throughout
+- Deleted redundant recalculate_timer_sector.sqf script
+- Updated init_server.sqf to remove the execution call for the deleted script
+
+## 2024-10-18 - Refactored attack_in_progress_fob.sqf
+- Replaced all sleep and waitUntil commands with CBA's event system
+- Implemented CBA_fnc_waitAndExecute for all delayed actions
+- Replaced blocking while loop with CBA_fnc_addPerFrameHandler for attack timer
+- Converted waitUntil to CBA_fnc_waitUntilAndExecute for sector state monitoring
+- Added proper function header with standardized documentation
+- Added debug mode for testing with faster timers and test enemy spawning
+- Improved code organization with consistent variable scoping and naming
+- Maintained all original functionality while eliminating blocking calls
+
 ## 2024-10-17 - Implemented Sector Persistence System
 - Properly integrated persistence functions (saveSectorUnits, spawnPersistentUnits) into CfgFunctions.hpp
 - Removed redundant .HEADER files that were causing function registration issues
@@ -79,8 +100,8 @@
 - scripts/server/ai/add_defense_waypoints.sqf
 - scripts/server/sector/wait_to_spawn_sector.sqf
 - scripts/server/sector/manage_one_sector.sqf
-
-## Files Pending Refactor
 - scripts/server/sector/attack_in_progress_fob.sqf
 - scripts/server/resources/manage_resources.sqf
+
+## Files Pending Refactor
 - scripts/server/resources/manage_logistics.sqf
