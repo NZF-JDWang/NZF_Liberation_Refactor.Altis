@@ -35,23 +35,6 @@
 - Improved sector spawning reliability
 - Enhanced performance by eliminating blocking calls
 
-## TODO for kill_manager:
-- All remaining event handlers in the following files need to be updated to use the new pattern:
-```
-unit addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];
-```
-
-- File list to update:
-  - scripts/server/secondary/search_and_rescue.sqf
-  - scripts/server/patrols/send_paratroopers.sqf
-  - scripts/server/patrols/manage_one_civilian_patrol.sqf
-  - scripts/server/game/save_manager.sqf
-  - scripts/server/battlegroup/spawn_air.sqf
-  - scripts/client/init_client.sqf
-  - scripts/client/build/do_build.sqf
-  - functions/fn_createManagedUnit.sqf
-  - functions/fn_handlePlacedZeusObject.sqf
-
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
