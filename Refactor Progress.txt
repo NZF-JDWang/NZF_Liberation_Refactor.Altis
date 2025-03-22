@@ -23,11 +23,40 @@
 - Optimized vehicle spawning logic
 
 ## 2024-10-15 - Refactored add_defense_waypoints.sqf
-- Replaced sleep and waitUntil with CBA_fnc_waitUntilAndExecute for non-blocking execution
+- Replaced sleep and waitUntil with CBA_fnc_waitAndExecute and CBA_fnc_addPerFrameHandler
 - Fixed parameter handling to properly accept both groups and vehicles
 - Added proper function header and documentation
 - Improved waypoint logic with a local function for waypoint clearing
 - Fixed calls in manage_one_sector.sqf to use call instead of spawn
+
+## 2024-10-15 - Enhanced add_defense_waypoints.sqf with LAMBS
+- Implemented LAMBS waypoint system integration (patrol, garrison, camp)
+- Added dynamic behavior selection based on unit type (infantry vs. vehicles)
+- Created weighted random selection of tactics for infantry units (patrol/garrison/camp)
+- Added fallback to vanilla waypoints when LAMBS is not available
+- Improved combat response with LAMBS taskRush and taskHunt for better enemy engagement
+- Expanded patrol radius for vehicles to reflect their mobility
+- Modified waypoint behavior to be more tactically sound
+
+## 2024-10-15 - Refactored manage_one_sector.sqf
+- Converted all waitUntil loops to CBA_fnc_waitUntilAndExecute
+- Replaced sleep commands with CBA_fnc_waitAndExecute
+- Converted sector lifetime loop to CBA_fnc_addPerFrameHandler
+- Restructured code into smaller functions for improved readability
+- Properly encapsulated sector configuration and unit spawning
+- Implemented non-blocking sector cleanup and liberation handling
+- Ensured proper variable scoping and reduced global variable usage
+- Added comprehensive function documentation header
+
+## 2024-10-16 - Fixed vehicle despawning in manage_one_sector.sqf
+- Enhanced cleanup logic to ensure all vehicle crews are deleted properly
+- Improved vehicle cleanup to delete the crew before the vehicle itself
+- Added tracking and deletion of empty AI groups after unit deletion
+- Implemented better handling of unmanaged vehicles in the sector area
+- Added detailed logging for tracking despawn issues
+- Fixed issues with vehicle crews remaining after sector deactivation
+- Enhanced logging with unit counts for infantry, vehicles, and groups
+- Added safeguards against null references in unit arrays
 
 ## 2024-03-22 - Refactored wait_to_spawn_sector.sqf
 - Converted to use CBA_fnc_waitUntilAndExecute instead of waitUntil loops
@@ -41,6 +70,7 @@
 - functions/fn_spawnVehicle.sqf
 - scripts/server/ai/add_defense_waypoints.sqf
 - scripts/server/sector/wait_to_spawn_sector.sqf
+- scripts/server/sector/manage_one_sector.sqf
 
 ## Files Pending Refactor
 - scripts/server/sector/attack_in_progress_fob.sqf
