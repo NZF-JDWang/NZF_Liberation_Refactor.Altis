@@ -22,6 +22,13 @@ params ["_sector", "_sectorpos", "_managed_units"];
 if (isNil "KPLIB_persistent_sectors") then {
     KPLIB_persistent_sectors = createHashMap;
     diag_log "[KPLIB] Created new KPLIB_persistent_sectors hashmap";
+} else {
+    // Ensure it's a HashMap if it exists but is the wrong type
+    if !(KPLIB_persistent_sectors isEqualType createHashMap) then {
+        diag_log format ["[KPLIB] ERROR: KPLIB_persistent_sectors is not a HashMap but a %1 - Creating new HashMap", typeName KPLIB_persistent_sectors];
+        KPLIB_persistent_sectors = createHashMap;
+        publicVariable "KPLIB_persistent_sectors";
+    };
 };
 
 private _sectorUnits = [];

@@ -17,8 +17,6 @@ check_victory_conditions = compileFinal preprocessFileLineNumbers "scripts\serve
 // Patrol
 manage_one_civilian_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_civilian_patrol.sqf";
 manage_one_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_patrol.sqf";
-reinforcements_manager = compileFinal preprocessFileLineNumbers "scripts\server\patrols\reinforcements_manager.sqf";
-send_paratroopers = compileFinal preprocessFileLineNumbers "scripts\server\patrols\send_paratroopers.sqf";
 
 // Secondary objectives
 fob_hunting = compileFinal preprocessFileLineNumbers "scripts\server\secondary\fob_hunting.sqf";
@@ -27,7 +25,6 @@ search_and_rescue = compileFinal preprocessFileLineNumbers "scripts\server\secon
 
 // Sector
 attack_in_progress_fob = compileFinal preprocessFileLineNumbers "scripts\server\sector\attack_in_progress_fob.sqf";
-attack_in_progress_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\attack_in_progress_sector.sqf";
 ied_manager = compileFinal preprocessFileLineNumbers "scripts\server\sector\ied_manager.sqf";
 manage_one_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\manage_one_sector.sqf";
 wait_to_spawn_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\wait_to_spawn_sector.sqf";
@@ -56,13 +53,12 @@ execVM "scripts\server\game\zeus_synchro.sqf";
 execVM "scripts\server\offloading\show_fps.sqf";
 execVM "scripts\server\patrols\civilian_patrols.sqf";
 execVM "scripts\server\patrols\manage_patrols.sqf";
-execVM "scripts\server\patrols\reinforcements_resetter.sqf";
-if (KP_liberation_ailogistics) then {execVM "scripts\server\resources\manage_logistics.sqf";};
+[] call KPLIB_fnc_reinforcementsResetter;
 execVM "scripts\server\resources\manage_resources.sqf";
 execVM "scripts\server\resources\recalculate_resources.sqf";
 execVM "scripts\server\resources\recalculate_timer.sqf";
 execVM "scripts\server\resources\unit_cap.sqf";
-execVM "scripts\server\sector\lose_sectors.sqf";
+[] call KPLIB_fnc_monitorSectors;
 
 KPLIB_fsm_sectorMonitor = [] call KPLIB_fnc_sectorMonitor;
 if (KP_liberation_high_command) then {KPLIB_fsm_highcommand = [] call KPLIB_fnc_highcommand;};

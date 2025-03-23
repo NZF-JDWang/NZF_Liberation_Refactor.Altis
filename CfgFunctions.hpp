@@ -7,6 +7,8 @@ class KPLIB {
         class addObjectInit             {};
         class addRopeAttachEh           {};
         class allowCrewInImmobile       {};
+        class attackInProgressFOB       {};
+        class attackInProgressSector    {};
         class checkClass                {};
         class checkCrateValue           {};
         class checkGear                 {};
@@ -66,10 +68,14 @@ class KPLIB {
         class isClassUAV                {};
         class isRadio                   {};
         class log                       {};
+        class monitorSectors            {};
         class potatoScan                {};
         class protectObject             {};
+        class reinforcementsManager     {};
+        class reinforcementsResetter    {};
         class saveSectorUnits           {};
         class secondsToTimer            {};
+        class sendParatroopers          {};
         class setDiscordState           {};
         class setFobMass                {};
         class setLoadableViV            {};

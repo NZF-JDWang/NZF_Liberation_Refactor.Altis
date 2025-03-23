@@ -22,6 +22,9 @@ Affected files (partial list, many more exist):
 - scripts/server/sector/manage_one_sector.sqf
 - scripts/server/resources/manage_resources.sqf
 - scripts/server/resources/manage_logistics.sqf
+- scripts/server/patrols/reinforcements_manager.sqf (DONE)
+- scripts/server/patrols/reinforcements_resetter.sqf (DONE)
+- scripts/server/patrols/send_paratroopers.sqf (DONE)
 
 ### 1.2 Optimize AI Handling and Spawning
 - Implement CBA's Task system for AI objectives

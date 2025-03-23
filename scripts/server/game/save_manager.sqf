@@ -85,7 +85,7 @@ KP_liberation_civ_rep = 0;
 KP_liberation_clearances = [];
 // Strength value of the resistance forces
 KP_liberation_guerilla_strength = 0;
-// Logistic handling data
+// Logistic handling data (empty - logistics system removed)
 KP_liberation_logistics = [];
 // Production handling data
 KP_liberation_production = [];
@@ -196,7 +196,16 @@ if (!isNil "_saveData") then {
         _allMines                                   = _saveData param [19, []];
         _allCrates                                  = _saveData param [20, []];
         KPLIB_sectorTowers                          = _saveData param [21, []];
-        KPLIB_persistent_sectors                    = _saveData param [22, createHashMap];
+        
+        // Ensure KPLIB_persistent_sectors is always a HashMap
+        private _persistentSectors = _saveData param [22, createHashMap];
+        if (_persistentSectors isEqualType createHashMap) then {
+            KPLIB_persistent_sectors = _persistentSectors;
+        } else {
+            diag_log format ["[KPLIB] ERROR: Saved KPLIB_persistent_sectors is not a HashMap but a %1 - Creating new HashMap", typeName _persistentSectors];
+            KPLIB_persistent_sectors = createHashMap;
+        };
+        
         KPLIB_activated_sectors                     = _saveData param [23, []];
 
         stats_ammo_produced                         = _stats select  0;

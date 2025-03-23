@@ -1,5 +1,16 @@
 # NZF Liberation Refactoring Progress
 
+## 2024-10-28 - Refactored lose_sectors.sqf to CBA Non-Blocking Function
+- Converted lose_sectors.sqf to KPLIB_fnc_monitorSectors using CBA functions
+- Replaced sleep commands with CBA_fnc_waitUntilAndExecute and CBA_fnc_addPerFrameHandler
+- Added proper server-side check to prevent execution on clients
+- Improved performance by removing blocking sleep calls
+- Added detailed logging for better troubleshooting
+- Implemented cleaner exit when endgame is triggered
+- Sector and FOB monitoring now runs on a 2-second cycle instead of shorter, inconsistent intervals
+- Updated init_server.sqf to call the new function instead of executing the script
+- Removed the original script file after confirming function works correctly
+
 ## 2024-10-23 - Enhanced Paratrooper Behavior with Intelligent Helicopter Logic
 - Added weapon detection system to check if paradrop helicopters are armed
 - Implemented conditional behavior based on helicopter armament
@@ -123,6 +134,42 @@
 - Ensured consistent code style and variable naming
 - Maintained all original functionality while eliminating blocking calls
 
+## 2024-10-27 - Enhanced Defender AI with LAMBS Waypoints
+- Added LAMBS waypoint integration to KPLIB_fnc_attackInProgressSector
+- Implemented intelligent defender behavior selection based on enemy presence
+- Added taskHunt for active combat situations to aggressively pursue enemies
+- Implemented randomized defensive behaviors (garrison, patrol, camp) for passive defense
+- Added taskDefend functionality with dynamic building position detection
+- Implemented intelligent building usage for enhanced defensive positions
+- Added combat detection with dynamic taskRush response when enemies are detected
+- Maintained fallback to vanilla waypoints when LAMBS is not available
+- Added detailed logging of AI behavior for troubleshooting
+- Created comprehensive debug testing tools in DebugCode.sqf
+
+## 2024-10-27 - Refactored attack_in_progress_sector.sqf
+- Converted attack_in_progress_sector.sqf to KPLIB_fnc_attackInProgressSector using CBA functions
+- Replaced all sleep and waitUntil calls with CBA_fnc_waitAndExecute and CBA_fnc_waitUntilAndExecute
+- Implemented CBA_fnc_addPerFrameHandler for the attack timer countdown
+- Improved code organization with private functions for defender spawning and attack timing
+- Added proper error handling and parameter validation
+- Enhanced logging for better debugging and mission state tracking
+- Added proper function header with standardized documentation
+- Maintained all original functionality while eliminating blocking calls
+- Updated all references to use the new function call
+- Removed the original script file after confirming function works
+
+## 2024-10-27 - Refactored attack_in_progress_fob.sqf to Function
+- Converted attack_in_progress_fob.sqf to KPLIB_fnc_attackInProgressFOB using CBA functions
+- Replaced all sleep and waitUntil calls with CBA_fnc_waitAndExecute and CBA_fnc_waitUntilAndExecute
+- Implemented CBA_fnc_addPerFrameHandler for the attack timer countdown
+- Added LAMBS waypoint integration for defender AI with intelligent behavior
+- Implemented randomized tactical behaviors (garrison, patrol, camp, defend) based on situation
+- Added proper error handling and parameter validation
+- Enhanced logging for better debugging and mission state tracking
+- Added proper function header with standardized documentation
+- Maintained all original functionality while eliminating blocking calls
+- Updated all references to use the new function call in lose_sectors.sqf
+
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
@@ -130,10 +177,22 @@
 - scripts/server/ai/add_defense_waypoints.sqf
 - scripts/server/sector/wait_to_spawn_sector.sqf
 - scripts/server/sector/manage_one_sector.sqf
-- scripts/server/sector/attack_in_progress_fob.sqf
+- scripts/server/sector/attack_in_progress_fob.sqf (-> functions/fn_attackInProgressFOB.sqf)
+- scripts/server/sector/attack_in_progress_sector.sqf (-> functions/fn_attackInProgressSector.sqf)
+- scripts/server/sector/lose_sectors.sqf (-> functions/fn_monitorSectors.sqf)
 - scripts/server/resources/manage_resources.sqf
 - scripts/server/patrols/reinforcements_manager.sqf (-> functions/fn_reinforcementsManager.sqf)
 - scripts/server/patrols/reinforcements_resetter.sqf (-> functions/fn_reinforcementsResetter.sqf)
 - scripts/server/patrols/send_paratroopers.sqf (-> functions/fn_sendParatroopers.sqf)
 
 ## Files Pending Refactor
+- scripts/server/sector/manage_sectors.sqf
+- scripts/server/ai/patrol_ai.sqf
+- scripts/server/ai/manage_ai.sqf
+- scripts/server/game/check_victory_conditions.sqf
+- scripts/server/game/save_manager.sqf
+- scripts/server/secondary/convoy_hijack.sqf
+- scripts/server/secondary/fob_hunting.sqf
+- scripts/shared/functions/F_libSpawnMilitiaCrew.sqf
+- scripts/shared/functions/F_libSpawnVehicle.sqf
+- scripts/shared/init_shared.sqf

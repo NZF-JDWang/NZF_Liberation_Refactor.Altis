@@ -109,7 +109,7 @@ If you want to change a preset, it's recommended to set all four presets to 0 an
 28 = SFP (Woodland)
 29 = SFP (Desert)
 30 = LDF (Contact DLC) */
-KP_liberation_preset_blufor = 0;
+KP_liberation_preset_blufor = 13;
 
 /* OPFOR preset:
 0  = Custom (default vanilla CSAT)
@@ -133,7 +133,7 @@ KP_liberation_preset_blufor = 0;
 18 = CUP Chernarus Defense Force
 19 = CUP British Armed Forces (Desert)
 20 = CUP British Armed Forces (Woodland) */
-KP_liberation_preset_opfor = 0;
+KP_liberation_preset_opfor = 6;
 
 /* Resistance preset:
 0  = Custom (default vanilla FIA)
@@ -240,9 +240,6 @@ KP_liberation_civinfo_intel = 5;                                        // Civil
 KP_liberation_civinfo_duration = 1200;                                  // Civil Informant staytime until despawning. (seconds)
 KP_liberation_civinfo_task_chance = 40;                                 // Chance (0-100) that the delivered informant will spawn a time critical task.
 KP_liberation_civinfo_task_duration = 900;                              // Duration until the task will despawn if no player is near. (seconds)
-
-KP_liberation_convoy_ambush_chance = 2;                                 // Chance that a logistic convoy will be ambushed, when civil reputation is low.
-KP_liberation_convoy_ambush_duration = 1200;                            // Duration of the convoy ambush event. (seconds)
 
 KP_liberation_resistance_tier2 = 30;                                    // At which strength (0-100) the guerilla forces will be at tier 2?
 KP_liberation_resistance_tier3 = 70;                                    // At which strength (0-100) the guerilla forces will be at tier 3?

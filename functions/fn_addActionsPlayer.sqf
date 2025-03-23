@@ -294,29 +294,6 @@ _player addAction [
     "
 ];
 
-// Logistic
-_player addAction [
-    ["<t color='#FF8000'>", localize "STR_LOGISTIC_ACTION", "</t>"] joinString "",
-    "scripts\client\commander\open_logistic.sqf",
-    nil,
-    -830,
-    false,
-    true,
-    "",
-    "
-        KP_liberation_ailogistics
-        && {_originalTarget getVariable ['KPLIB_hasDirectAccess', false]}
-        && {isNull (objectParent _originalTarget)}
-        && {alive _originalTarget}
-        && {_originalTarget getVariable ['KPLIB_fobDist', 99999] < (GRLIB_fob_range * 0.8)}
-        && {!(
-            GRLIB_all_fobs isEqualTo []
-            || KP_liberation_production isEqualTo []
-        )}
-        && {build_confirmed isEqualTo 0}
-    "
-];
-
 // Permissions
 _player addAction [
     ["<t color='#FF8000'>", localize "STR_COMMANDER_ACTION", "</t><img size='2' image='\a3\Ui_F_Curator\Data\Displays\RscDisplayCurator\modeGroups_ca.paa'/>"] joinString "",

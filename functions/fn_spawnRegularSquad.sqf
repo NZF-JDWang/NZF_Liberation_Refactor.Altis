@@ -7,6 +7,7 @@
 
     Description:
         Spawns a regular enemy squad with given soldier classnames at given sector.
+        Uses staggered spawning via CBA to reduce lag spikes.
 
     Parameter(s):
         _sector     - Sector to spawn the squad at          [STRING, defaults to ""]
@@ -39,13 +40,35 @@ if (_spawnPos isEqualTo zeroPos) exitWith {
     grpNull
 };
 
-// Spawn units of squad
+// Calculate corrected amount based on opfor factor
 private _corrected_amount = round ((count _classnames) * ([] call KPLIB_fnc_getOpforFactor));
 private _grp = createGroup [GRLIB_side_enemy, true];
-{
-    if (_forEachIndex < _corrected_amount) then {
-        [_x, _spawnPos, _grp] call KPLIB_fnc_createManagedUnit;
+
+// Recursive function to spawn units with staggered delay
+private _fnc_spawnNextUnit = {
+    params ["_args", "_handle"];
+    _args params ["_classnames", "_spawnPos", "_grp", "_currentIndex", "_maxIndex"];
+    
+    // Exit if all units spawned or group no longer exists
+    if (_currentIndex >= _maxIndex || isNull _grp) exitWith {
+        [_handle] call CBA_fnc_removePerFrameHandler;
     };
-} forEach _classnames;
+    
+    // Get next classname to spawn
+    private _classname = _classnames select _currentIndex;
+    
+    // Spawn the unit
+    [_classname, _spawnPos, _grp] call KPLIB_fnc_createManagedUnit;
+    
+    // Update index for next unit
+    _args set [3, _currentIndex + 1];
+};
+
+// Start the staggered spawning process - one unit every 0.05 seconds
+[
+    _fnc_spawnNextUnit,
+    0.05,
+    [_classnames, _spawnPos, _grp, 0, _corrected_amount]
+] call CBA_fnc_addPerFrameHandler;
 
 _grp

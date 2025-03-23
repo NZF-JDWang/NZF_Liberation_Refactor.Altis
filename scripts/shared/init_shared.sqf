@@ -11,14 +11,6 @@ intel_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remot
 start_secondary_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\start_secondary_remote_call.sqf";
 change_prod_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\change_prod_remote_call.sqf";
 build_fac_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\build_fac_remote_call.sqf";
-if (KP_liberation_ailogistics) then {
-    add_logiGroup_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\add_logiGroup_remote_call.sqf";
-    del_logiGroup_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\del_logiGroup_remote_call.sqf";
-    add_logiTruck_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\add_logiTruck_remote_call.sqf";
-    del_logiTruck_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\del_logiTruck_remote_call.sqf";
-    save_logi_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\save_logi_remote_call.sqf";
-    abort_logi_remote_call = compileFinal preprocessFileLineNumbers "scripts\server\remotecall\abort_logi_remote_call.sqf";
-};
 
 remote_call_sector = compileFinal preprocessFileLineNumbers "scripts\client\remotecall\remote_call_sector.sqf";
 remote_call_fob = compileFinal preprocessFileLineNumbers "scripts\client\remotecall\remote_call_fob.sqf";

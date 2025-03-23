@@ -26,6 +26,12 @@ if (isNil "KPLIB_persistent_sectors") exitWith {
     _spawnedUnits
 };
 
+// Check if persistence data is a HashMap
+if !(KPLIB_persistent_sectors isEqualType createHashMap) exitWith {
+    diag_log format ["[KPLIB] Sector %1 persistence - KPLIB_persistent_sectors is not a HashMap but a %2", _sector, typeName KPLIB_persistent_sectors];
+    _spawnedUnits
+};
+
 // Check if this sector has persistent data
 if !(_sector in keys KPLIB_persistent_sectors) exitWith {
     diag_log format ["[KPLIB] Sector %1 persistence - No data for this sector", _sector];

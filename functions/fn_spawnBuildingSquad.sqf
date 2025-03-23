@@ -7,6 +7,7 @@
 
     Description:
         Spawns given amount of infantry in buildings of given sector at given building positions.
+        Uses staggered spawning via CBA to reduce lag spikes.
 
     Parameter(s):
         _type       - Type of infantry. Either "militia" or "army"  [STRING, defaults to "army"]
@@ -35,22 +36,60 @@ if (_amount > floor ((count _positions) * GRLIB_defended_buildingpos_part)) then
     _amount = floor ((count _positions) * GRLIB_defended_buildingpos_part)
 };
 
-// Spawn units
+// Create storage for units and positions
+private _selectedPositions = [];
+private _units = [];
+
+// Select positions in advance
+for "_i" from 1 to _amount do {
+    if (count _positions > 0) then {
+        _selectedPositions pushBack (_positions deleteAt (floor (random count _positions)));
+    };
+};
+
+// Create initial group
 private _grp = createGroup [GRLIB_side_enemy, true];
 private _pos = markerPos _sector;
-private _unit = objNull;
-private _units = [];
-for "_i" from 1 to _amount do {
-    // Create new group, if current group has 10 units
-    if (count (units _grp) >= 10) then {
-        _grp = createGroup [GRLIB_side_enemy, true];
-    };
+private _currentGroup = _grp;
+private _currentCount = 0;
 
-    _unit = [selectRandom _classnames, _pos, _grp] call KPLIB_fnc_createManagedUnit;
+// Recursive function to spawn units with staggered delay
+private _fnc_spawnNextUnit = {
+    params ["_args", "_handle"];
+    _args params ["_classnames", "_pos", "_selectedPositions", "_currentGroup", "_currentCount", "_sector", "_units", "_spawnedCount", "_totalToSpawn"];
+    
+    // Exit if all units spawned
+    if (_spawnedCount >= _totalToSpawn || count _selectedPositions == 0) exitWith {
+        [_handle] call CBA_fnc_removePerFrameHandler;
+    };
+    
+    // Create new group if needed (max 10 units per group)
+    if (_currentCount >= 10) then {
+        _currentGroup = createGroup [GRLIB_side_enemy, true];
+        _args set [3, _currentGroup];
+        _args set [4, 0];
+    };
+    
+    // Get position and spawn unit
+    private _unitPos = _selectedPositions deleteAt 0;
+    private _unit = [selectRandom _classnames, _pos, _currentGroup] call KPLIB_fnc_createManagedUnit;
     _unit setDir (random 360);
-    _unit setPos (_positions deleteAt (random (floor (count _positions) - 1)));
+    _unit setPos _unitPos;
+    
+    // Start building defense AI
     [_unit, _sector] spawn building_defence_ai;
+    
+    // Add to results and update counters
     _units pushBack _unit;
+    _args set [4, _currentCount + 1]; // Update current group count
+    _args set [7, _spawnedCount + 1]; // Update total spawned count
 };
+
+// Start the staggered spawning process - one unit every 0.05 seconds
+[
+    _fnc_spawnNextUnit,
+    0.05,
+    [_classnames, _pos, _selectedPositions, _currentGroup, _currentCount, _sector, _units, 0, _amount]
+] call CBA_fnc_addPerFrameHandler;
 
 _units

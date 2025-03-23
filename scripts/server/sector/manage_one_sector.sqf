@@ -262,19 +262,26 @@ if (isNil "KPLIB_activated_sectors") then {
                 (!isNil "KPLIB_persistent_sectors")
             ];
             
+            // Check if there's actual saved data in the persistence map
+            private _hasDataInMap = false;
             if (!isNil "KPLIB_persistent_sectors") then {
-                diag_log format ["[KPLIB] Sector %1 persistence debug - Sector in persistence map: %2, Data: %3", 
-                    _sector, 
-                    (_sector in keys KPLIB_persistent_sectors), 
-                    if (_sector in keys KPLIB_persistent_sectors) then {KPLIB_persistent_sectors get _sector} else {"N/A"}
-                ];
+                if (KPLIB_persistent_sectors isEqualType createHashMap) then {
+                    _hasDataInMap = _sector in keys KPLIB_persistent_sectors;
+                    if (_hasDataInMap) then {
+                        diag_log format ["[KPLIB] Sector %1 - Found in persistence map with data", _sector];
+                    };
+                } else {
+                    diag_log format ["[KPLIB] ERROR: KPLIB_persistent_sectors is not a HashMap but a %1 - Creating new HashMap", typeName KPLIB_persistent_sectors];
+                    KPLIB_persistent_sectors = createHashMap;
+                    publicVariable "KPLIB_persistent_sectors";
+                };
             };
             
             if (_sectorHasSavedData) then {
-                diag_log format ["[KPLIB] Sector %1 - Found persistence flag", _sector];
+                diag_log format ["[KPLIB] Sector %1 - Has persistence flag", _sector];
                 
                 // Check if there's actual saved data in the persistence map
-                if (!isNil "KPLIB_persistent_sectors" && {_sector in keys KPLIB_persistent_sectors}) then {
+                if (_hasDataInMap) then {
                     diag_log format ["[KPLIB] Sector %1 - Loading persistent units from data", _sector];
                     
                     // Spawn the saved units
@@ -427,11 +434,24 @@ if (isNil "KPLIB_activated_sectors") then {
     private _additionalTicketsAdded = false;
     private _handle = [{
         params ["_args", "_handle"];
-        _args params ["_sector", "_sectorpos", "_managed_units", "_sector_despawn_tickets", "_maximum_additional_tickets", "_tickTime", "_additionalTicketsAdded"];
+        _args params ["_sector", "_sectorpos", "_managed_units", "_sector_despawn_tickets", "_maximum_additional_tickets", "_tickTime", "_additionalTicketsAdded", "_local_capture_size"];
         
         // Check if sector is captured by blufor
         if (_sector in blufor_sectors) exitWith {
-            diag_log format ["[KPLIB] Sector %1 - captured by blufor, removing PFH", _sector];
+            diag_log format ["[KPLIB] Sector %1 - already captured by blufor, removing PFH", _sector];
+            [_handle] call CBA_fnc_removePerFrameHandler;
+        };
+        
+        // Check for active capture conditions
+        if (([_sectorpos, _local_capture_size] call KPLIB_fnc_getSectorOwnership == GRLIB_side_friendly) && (GRLIB_endgame == 0)) then {
+            diag_log format ["[KPLIB] Sector %1 - conditions met for capture, calling liberation", _sector];
+            if (isServer) then {
+                [_sector] call sector_liberated_remote_call;
+            } else {
+                [_sector] remoteExec ["sector_liberated_remote_call", 2];
+            };
+            
+            // Clean up PFH
             [_handle] call CBA_fnc_removePerFrameHandler;
         };
         
@@ -576,7 +596,7 @@ if (isNil "KPLIB_activated_sectors") then {
             // Return early since cleanup is handled in the above code block
             // Do NOT remove the PFH here as it's done in the delayed execution block
         };
-    }, SECTOR_TICK_TIME, [_sector, _sectorpos, _managed_units, _sector_despawn_tickets, _maximum_additional_tickets, _tickTime, _additionalTicketsAdded]] call CBA_fnc_addPerFrameHandler;
+    }, SECTOR_TICK_TIME, [_sector, _sectorpos, _managed_units, _sector_despawn_tickets, _maximum_additional_tickets, _tickTime, _additionalTicketsAdded, _local_capture_size]] call CBA_fnc_addPerFrameHandler;
     
     [format ["Sector %1 (%2) deactivated - Was managed on: %3", (markerText _sector), _sector, debug_source], "SECTORSPAWN"] remoteExecCall ["KPLIB_fnc_log", 2];
     

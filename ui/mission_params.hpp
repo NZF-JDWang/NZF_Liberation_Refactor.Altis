@@ -51,7 +51,7 @@ class Params {
         title = $STR_PARAMS_FIRSTFOB;
         values[] = {1, 0};
         texts[] = {$STR_YES, $STR_NO};
-        default = 0;
+        default = 1;
     };
     class FirstFobVehicle {
         title = $STR_PARAMS_FIRSTFOBVEHICLE;
@@ -237,7 +237,7 @@ class Params {
         title = $STR_PARAMS_MOBILERESPAWN;
         values[] = {0, 1};
         texts[] = {$STR_PARAMS_DISABLED, $STR_PARAMS_ENABLED};
-        default = 1;
+        default = 0;
     };
     class RespawnCooldown {
         title = $STR_PARAM_RESPAWN_COOLDOWN;
@@ -249,19 +249,13 @@ class Params {
         title = $STR_PARAMS_MOBILEARSENAL;
         values[] = {0, 1};
         texts[] = {$STR_PARAMS_DISABLED, $STR_PARAMS_ENABLED};
-        default = 1;
+        default = 0;
     };
     class AttackedSectorRespawn {
         title = $STR_PARAMS_ATTACKEDSECTORRESPAWN;
         values[] = {0, 1};
         texts[] = {$STR_PARAMS_DISABLED, $STR_PARAMS_ENABLED};
         default = 0;
-    };
-    class AiLogistics {
-        title = $STR_PARAMS_AILOGISTICS;
-        values[] = {0, 1};
-        texts[] = {$STR_PARAMS_DISABLED, $STR_PARAMS_ENABLED};
-        default = 1;
     };
     class CR_Building {
         title = $STR_PARAM_CR_BUILDING;
@@ -309,7 +303,7 @@ class Params {
         title = $STR_PARAM_ZEUSADDENEMIES;
         values[] = {1, 0};
         texts[] = {$STR_PARAMS_ENABLED, $STR_PARAMS_DISABLED};
-        default = 0;
+        default = 1;
     };
     class HighCommand {
         title = $STR_PARAM_HIGHCOMMAND;
@@ -381,13 +375,13 @@ class Params {
         title = $STR_WIPE_TITLE;
         values[] = {0, 1};
         texts[] =  {$STR_WIPE_NO, $STR_WIPE_YES};
-        default = 1;
+        default = 0;
     };
     class WipeSave2 {
         title = $STR_WIPE_TITLE_2;
         values[] = {0, 1};
         texts[] = {$STR_WIPE_NO, $STR_WIPE_YES};
-        default = 1;
+        default = 0;
     };
     class Spacer4 {
         title = "";
