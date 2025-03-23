@@ -1,5 +1,24 @@
 # NZF Liberation Refactoring Progress
 
+## 2024-10-23 - Enhanced Paratrooper Behavior with Intelligent Helicopter Logic
+- Added weapon detection system to check if paradrop helicopters are armed
+- Implemented conditional behavior based on helicopter armament
+- Armed helicopters now provide fire support with SAD waypoints after dropping troops
+- Unarmed transport helicopters return to spawn point and automatically despawn
+- Added proper cleanup routines to prevent lingering vehicles and crews
+- Enhanced tactical behavior of paratroopers using LAMBS waypoints
+- Improved vehicle capacity detection for more reliable troop transport
+- Added detailed debug logging for troubleshooting
+
+## 2024-10-21 - Removed Logistics System
+- Completely removed the AI logistics system to simplify codebase
+- Removed scripts/server/resources/manage_logistics.sqf
+- Removed logistics parameter from mission_params.hpp and fetch_params.sqf
+- Maintained empty logistics array in save_manager.sqf for compatibility
+- Removed logistics-related remote call functions
+- Removed logistics UI action from player menu
+- Removed convoy ambush parameters from config
+
 ## 2024-10-20 - Refactored manage_resources.sqf
 - Replaced waitUntil and sleep commands with CBA equivalent functions
 - Consolidated functionality from recalculate_timer_sector.sqf into manage_resources.sqf
@@ -93,6 +112,17 @@
 - Improved sector spawning reliability
 - Enhanced performance by eliminating blocking calls
 
+## 2024-10-22 - Refactored Reinforcements System
+- Converted reinforcements_manager.sqf to KPLIB_fnc_reinforcementsManager using CBA functions
+- Converted reinforcements_resetter.sqf to KPLIB_fnc_reinforcementsResetter using CBA functions
+- Converted send_paratroopers.sqf to KPLIB_fnc_sendParatroopers using CBA functions
+- Updated all references to these scripts to use the new function calls
+- Removed old script compilations from init_server.sqf
+- Added proper function headers with standardized documentation
+- Improved error handling and parameter validation
+- Ensured consistent code style and variable naming
+- Maintained all original functionality while eliminating blocking calls
+
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
@@ -102,6 +132,8 @@
 - scripts/server/sector/manage_one_sector.sqf
 - scripts/server/sector/attack_in_progress_fob.sqf
 - scripts/server/resources/manage_resources.sqf
+- scripts/server/patrols/reinforcements_manager.sqf (-> functions/fn_reinforcementsManager.sqf)
+- scripts/server/patrols/reinforcements_resetter.sqf (-> functions/fn_reinforcementsResetter.sqf)
+- scripts/server/patrols/send_paratroopers.sqf (-> functions/fn_sendParatroopers.sqf)
 
 ## Files Pending Refactor
-- scripts/server/resources/manage_logistics.sqf
