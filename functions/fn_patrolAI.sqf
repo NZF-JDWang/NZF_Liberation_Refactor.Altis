@@ -75,25 +75,35 @@ private _pfh = [{
         // Use LAMBS enhanced behavior if available
         if (_hasLAMBS) then {
             if (_isVehicleGroup) then {
-                // Vehicle reinforcement with LAMBS - attack and hunt
+                // Vehicle reinforcement with LAMBS - use patrol instead of Rush
                 _grp setSpeedMode "FULL";
-                [_grp, _attackPos, 300] call lambs_wp_fnc_taskRush;
+                _grp setBehaviour "AWARE";
+                _grp setCombatMode "RED";
+                
+                // Use taskPatrol with tight radius to search the area without omniscience
+                [_grp, _attackPos, 200] call lambs_wp_fnc_taskPatrol;
+                ["Vehicle reinforcement using LAMBS taskPatrol at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
             } else {
-                // Infantry reinforcement with LAMBS - more tactical approach
+                // Infantry reinforcement with LAMBS - tactical approach without Rush/Hunt
                 _grp setSpeedMode "FULL";
+                _grp setBehaviour "AWARE";
+                _grp setCombatMode "RED";
                 
-                // Determine if there are enemies near the attack position
-                private _enemiesNearby = [_attackPos, 500, GRLIB_side_friendly] call KPLIB_fnc_getUnitsCount;
+                // Check if buildings are available for assault
+                private _nearBuildings = _attackPos nearObjects ["House", 300];
                 
-                if (_enemiesNearby > 0) then {
-                    // Active combat - use taskHunt for dynamic search and destroy
-                    [_grp, _attackPos, 300] call lambs_wp_fnc_taskHunt;
-                    ["Patrol using LAMBS taskHunt for active combat at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
+                if (count _nearBuildings > 3) then {
+                    // Use taskAssault for dynamic building clearing if buildings present
+                    [_grp, _attackPos, 250, true, true] call lambs_wp_fnc_taskAssault;
+                    ["Infantry reinforcement using LAMBS taskAssault at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
                 } else {
-                    // No immediate enemies - use taskRush
-                    [_grp, _attackPos, 300] call lambs_wp_fnc_taskRush;
-                    ["Patrol using LAMBS taskRush to move to sector: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
+                    // Use taskPatrol with tight radius in open areas
+                    [_grp, _attackPos, 150] call lambs_wp_fnc_taskPatrol;
+                    ["Infantry reinforcement using LAMBS taskPatrol at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
                 };
+                
+                // Add indoor movement capability but without wall-hacking
+                [_grp] call lambs_wp_fnc_taskIndoor;
             };
         } else {
             // Fallback to vanilla waypoints if LAMBS not available
@@ -164,7 +174,7 @@ private _pfh = [{
                 } else {
                     // Infantry patrol with LAMBS - random strategy selection for variety
                     private _patrolRadius = 400;
-                    private _randomBehavior = selectRandom [1, 2, 3, 4]; // Different patrol behaviors
+                    private _randomBehavior = selectRandom [1, 2, 3]; // Different patrol behaviors (removed Hunt)
                     
                     // Select a patrol position - either a sector or current position
                     private _patrolPos = if (count _sectors_patrol > 0) then {
@@ -195,16 +205,10 @@ private _pfh = [{
                             [_grp, _patrolPos, 100, true, false] call lambs_wp_fnc_taskCamp;
                             ["Infantry patrol using LAMBS taskCamp", "PATROLS"] call KPLIB_fnc_log;
                         };
-                        case 4: {
-                            // Active hunting pattern
-                            [_grp, _patrolPos, _patrolRadius] call lambs_wp_fnc_taskHunt;
-                            ["Infantry patrol using LAMBS taskHunt", "PATROLS"] call KPLIB_fnc_log;
-                        };
                     };
                     
-                    // Add a combat response - when enemies detected, rush to engage them
-                    // This is in addition to the main patrol pattern
-                    [_grp] call lambs_wp_fnc_taskCQB;
+                    // Add indoor movement capability without omniscience
+                    [_grp] call lambs_wp_fnc_taskIndoor;
                 };
             } else {
                 // Fallback to vanilla waypoints if LAMBS not available

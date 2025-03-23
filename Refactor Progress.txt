@@ -194,6 +194,15 @@
 - Added detailed logging for AI behavior debugging
 - Enhanced overall patrol effectiveness while preserving existing functionality
 
+## 2024-03-23 - Improved Stealth Balance in Patrol AI
+- Removed taskHunt and taskRush LAMBS waypoints to prevent AI from having unfair knowledge of player positions
+- Replaced with more balanced taskPatrol and taskAssault behaviors that respect stealth gameplay
+- Added intelligent use of taskAssault for building clearing during reinforcements
+- Implemented taskIndoor for better building navigation without wall-hacking capabilities
+- Ensured combat behaviors are more realistic and don't compromise player stealth tactics
+- Maintained the variety of behaviors while enhancing the gameplay experience
+- Balanced AI awareness to create a more fair and immersive experience
+
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
