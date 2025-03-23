@@ -170,6 +170,30 @@
 - Maintained all original functionality while eliminating blocking calls
 - Updated all references to use the new function call in lose_sectors.sqf
 
+## 2024-03-23 - Refactored Patrol Management System
+- Converted manage_patrols.sqf to KPLIB_fnc_managePatrols using CBA functions
+- Converted manage_one_patrol.sqf to KPLIB_fnc_manageOnePatrol using CBA functions
+- Converted patrol_ai.sqf to KPLIB_fnc_patrolAI using CBA functions
+- Replaced all sleep and waitUntil commands with CBA_fnc_waitAndExecute and CBA_fnc_waitUntilAndExecute
+- Implemented CBA_fnc_addPerFrameHandler for patrol AI behavior monitoring
+- Improved patrol lifecycle management with proper error handling and cleanup
+- Enhanced performance by eliminating blocking calls
+- Added detailed logging for better troubleshooting
+- Ensured proper headless client integration
+- Maintained all original functionality while improving code quality
+
+## 2024-03-23 - Enhanced Patrol AI with LAMBS Waypoints
+- Integrated LAMBS waypoint system into KPLIB_fnc_patrolAI
+- Added intelligent behavior selection based on unit type (infantry vs vehicles)
+- Implemented context-aware reinforcement behavior using taskHunt/taskRush for combat
+- Created weighted random selection of patrol tactics (patrol/garrison/camp/hunt)
+- Added dynamic building usage for enhanced tactical positions
+- Improved patrol radius calculations for vehicle patrols
+- Implemented automatic combat behavior changes when enemies are detected
+- Maintained fallback to vanilla waypoints when LAMBS is not available
+- Added detailed logging for AI behavior debugging
+- Enhanced overall patrol effectiveness while preserving existing functionality
+
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
@@ -184,10 +208,12 @@
 - scripts/server/patrols/reinforcements_manager.sqf (-> functions/fn_reinforcementsManager.sqf)
 - scripts/server/patrols/reinforcements_resetter.sqf (-> functions/fn_reinforcementsResetter.sqf)
 - scripts/server/patrols/send_paratroopers.sqf (-> functions/fn_sendParatroopers.sqf)
+- scripts/server/patrols/manage_patrols.sqf (-> functions/fn_managePatrols.sqf)
+- scripts/server/patrols/manage_one_patrol.sqf (-> functions/fn_manageOnePatrol.sqf)
+- scripts/server/ai/patrol_ai.sqf (-> functions/fn_patrolAI.sqf)
 
 ## Files Pending Refactor
 - scripts/server/sector/manage_sectors.sqf
-- scripts/server/ai/patrol_ai.sqf
 - scripts/server/ai/manage_ai.sqf
 - scripts/server/game/check_victory_conditions.sqf
 - scripts/server/game/save_manager.sqf
