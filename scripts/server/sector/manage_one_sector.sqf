@@ -456,7 +456,7 @@ if (isNil "KPLIB_activated_sectors") then {
         };
         
         // Check for player/friendly presence
-        private _friendlies_near = ([_sectorpos, 300, GRLIB_side_friendly] call KPLIB_fnc_getUnitsCount);
+        private _friendlies_near = ([_sectorpos, GRLIB_sector_size, GRLIB_side_friendly] call KPLIB_fnc_getUnitsCount);
         
         // If no friendlies (players) are present, decrement tickets
         if (_friendlies_near == 0) then {

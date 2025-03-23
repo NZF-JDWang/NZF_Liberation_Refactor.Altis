@@ -124,6 +124,9 @@ if (_classname in militia_vehicles) then {
     
     // Add MPKilled EH to crew members
     {_x addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];} forEach _crew;
+    
+    // Transfer to headless client
+    [_grp] call KPLIB_fnc_transferGroupToHC;
 };
 
 // Add MPKilled EH and enable damage

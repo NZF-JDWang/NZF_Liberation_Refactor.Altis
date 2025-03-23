@@ -1,18 +1,18 @@
 // AI
 add_civ_waypoints = compileFinal preprocessFileLineNumbers "scripts\server\ai\add_civ_waypoints.sqf";
 add_defense_waypoints = compileFinal preprocessFileLineNumbers "scripts\server\ai\add_defense_waypoints.sqf";
-battlegroup_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\battlegroup_ai.sqf";
+// battlegroup_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\battlegroup_ai.sqf"; // Replaced by KPLIB_fnc_spawnBattlegroupAI
 building_defence_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\building_defence_ai.sqf";
 // patrol_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\patrol_ai.sqf"; // Replaced by KPLIB_fnc_patrolAI
 prisonner_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\prisonner_ai.sqf";
-troup_transport = compileFinal preprocessFileLineNumbers "scripts\server\ai\troup_transport.sqf";
+// troup_transport = compileFinal preprocessFileLineNumbers "scripts\server\ai\troup_transport.sqf"; // Replaced by KPLIB_fnc_troopTransport
 
 // Battlegroup
-spawn_air = compileFinal preprocessFileLineNumbers "scripts\server\battlegroup\spawn_air.sqf";
-spawn_battlegroup = compileFinal preprocessFileLineNumbers "scripts\server\battlegroup\spawn_battlegroup.sqf";
+// spawn_air = compileFinal preprocessFileLineNumbers "scripts\server\battlegroup\spawn_air.sqf"; // Replaced by KPLIB_fnc_spawnAir
+// spawn_battlegroup = compileFinal preprocessFileLineNumbers "scripts\server\battlegroup\spawn_battlegroup.sqf"; // Replaced by KPLIB_fnc_spawnBattlegroup
 
 // Game
-check_victory_conditions = compileFinal preprocessFileLineNumbers "scripts\server\game\check_victory_conditions.sqf";
+// check_victory_conditions = compileFinal preprocessFileLineNumbers "scripts\server\game\check_victory_conditions.sqf";
 
 // Patrol
 manage_one_civilian_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_civilian_patrol.sqf";
@@ -24,7 +24,7 @@ convoy_hijack = compileFinal preprocessFileLineNumbers "scripts\server\secondary
 search_and_rescue = compileFinal preprocessFileLineNumbers "scripts\server\secondary\search_and_rescue.sqf";
 
 // Sector
-attack_in_progress_fob = compileFinal preprocessFileLineNumbers "scripts\server\sector\attack_in_progress_fob.sqf";
+// attack_in_progress_fob = compileFinal preprocessFileLineNumbers "scripts\server\sector\attack_in_progress_fob.sqf"; // Replaced by KPLIB_fnc_attackInProgressFOB
 ied_manager = compileFinal preprocessFileLineNumbers "scripts\server\sector\ied_manager.sqf";
 manage_one_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\manage_one_sector.sqf";
 wait_to_spawn_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\wait_to_spawn_sector.sqf";
@@ -32,20 +32,31 @@ wait_to_spawn_sector = compileFinal preprocessFileLineNumbers "scripts\server\se
 // Globals
 active_sectors = []; publicVariable "active_sectors";
 
+// Provide backwards compatibility for old script calls
+battlegroup_ai = {[_this select 0] call KPLIB_fnc_spawnBattlegroupAI};
+spawn_battlegroup = {[_this select 0, _this select 1] call KPLIB_fnc_spawnBattlegroup};
+spawn_air = {[_this select 0] call KPLIB_fnc_spawnAir};
+troup_transport = {[_this select 0] call KPLIB_fnc_troopTransport};
+
 execVM "scripts\server\base\startgame.sqf";
 execVM "scripts\server\base\huron_manager.sqf";
 execVM "scripts\server\base\startvehicle_spawn.sqf";
 [] call KPLIB_fnc_createSuppModules;
-execVM "scripts\server\battlegroup\counter_battlegroup.sqf";
-execVM "scripts\server\battlegroup\random_battlegroups.sqf";
-execVM "scripts\server\battlegroup\readiness_increase.sqf";
+// execVM "scripts\server\battlegroup\counter_battlegroup.sqf"; // Replaced by KPLIB_fnc_counterBattlegroup
+// execVM "scripts\server\battlegroup\random_battlegroups.sqf"; // Replaced by KPLIB_fnc_randomBattlegroups
+// execVM "scripts\server\battlegroup\readiness_increase.sqf"; // Replaced by KPLIB_fnc_readinessIncrease
+[] call KPLIB_fnc_counterBattlegroup;
+[] call KPLIB_fnc_randomBattlegroups;
+[] call KPLIB_fnc_readinessIncrease;
 execVM "scripts\server\game\apply_default_permissions.sqf";
 execVM "scripts\server\game\cleanup_vehicles.sqf";
 if (!KP_liberation_fog_param) then {execVM "scripts\server\game\fucking_set_fog.sqf";};
 execVM "scripts\server\game\manage_time.sqf";
 execVM "scripts\server\game\manage_weather.sqf";
 execVM "scripts\server\game\playtime.sqf";
-execVM "scripts\server\game\save_manager.sqf";
+// execVM "scripts\server\game\check_victory_conditions.sqf";
+[] call KPLIB_fnc_checkVictoryConditions;
+[] call KPLIB_fnc_saveManager;
 execVM "scripts\server\game\spawn_radio_towers.sqf";
 execVM "scripts\server\game\synchronise_vars.sqf";
 execVM "scripts\server\game\synchronise_eco.sqf";

@@ -14,7 +14,7 @@
         _radius - Radius in which to look for the nearest radio tower       [NUMBER, defaults to 1000]
 
     Returns:
-        Marker of nearest radio tower [STRING]
+        Marker of nearest radio tower [STRING], or empty string if none found
 */
 
 params [
@@ -27,4 +27,9 @@ private _towers = [sectors_tower select {_x in blufor_sectors}, sectors_tower - 
 _towers = (_towers apply {[(markerPos _x) distance2d _pos, _x]}) select {(_x select 0) <= _radius};
 _towers sort true;
 
-(_towers select 0) select 1
+// Return the nearest tower marker or empty string if none found
+if (_towers isEqualTo []) then {
+    ""
+} else {
+    (_towers select 0) select 1
+};

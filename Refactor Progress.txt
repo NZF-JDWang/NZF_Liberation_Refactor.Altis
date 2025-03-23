@@ -1,5 +1,34 @@
 # NZF Liberation Refactoring Progress
 
+## 2024-10-30 - Refactored save_manager.sqf to KPLIB_fnc_saveManager
+- Converted save_manager.sqf to KPLIB_fnc_saveManager using CBA functions
+- Replaced waitUntil with CBA_fnc_waitUntilAndExecute for display initialization
+- Replaced infinite while/sleep loop with CBA_fnc_addPerFrameHandler for periodic saving
+- Maintained same functionality including compatibility with older save formats
+- Added proper error handling and function exit when endgame is triggered
+- Added comprehensive function header with standardized documentation
+- Ensured proper cleanup of handler when mission ends
+- Added detailed performance measurements for each save operation
+- Updated init_server.sqf to use the new function instead of the script
+- Added the function to KPLIB_game class in CfgFunctions.hpp
+
+## 2024-10-30 - Refactored Battlegroup System to CBA Functions
+- Converted spawn_battlegroup.sqf to KPLIB_fnc_spawnBattlegroup using CBA functions
+- Converted battlegroup_ai.sqf to KPLIB_fnc_spawnBattlegroupAI using CBA functions
+- Converted spawn_air.sqf to KPLIB_fnc_spawnAir using CBA functions
+- Converted troup_transport.sqf to KPLIB_fnc_troopTransport using CBA functions
+- Converted readiness_increase.sqf to KPLIB_fnc_readinessIncrease using CBA functions
+- Converted random_battlegroups.sqf to KPLIB_fnc_randomBattlegroups using CBA functions
+- Converted counter_battlegroup.sqf to KPLIB_fnc_counterBattlegroup using CBA functions
+- Created KPLIB_fnc_transferGroupsToHC for non-blocking headless client transfers
+- Replaced all sleep and waitUntil commands with CBA_fnc_waitAndExecute and CBA_fnc_addPerFrameHandler
+- Maintained backwards compatibility through wrapper functions in init_server.sqf
+- Enhanced error handling and parameter validation in all functions
+- Added proper function headers with standardized documentation
+- Added the functions to KPLIB_game class in CfgFunctions.hpp
+- Removed all original script files after confirming functions work
+- Maintained all original functionality while eliminating blocking calls
+
 ## 2024-10-28 - Refactored lose_sectors.sqf to CBA Non-Blocking Function
 - Converted lose_sectors.sqf to KPLIB_fnc_monitorSectors using CBA functions
 - Replaced sleep commands with CBA_fnc_waitUntilAndExecute and CBA_fnc_addPerFrameHandler
@@ -203,6 +232,38 @@
 - Maintained the variety of behaviors while enhancing the gameplay experience
 - Balanced AI awareness to create a more fair and immersive experience
 
+## 2024-10-29 - Refactored check_victory_conditions.sqf
+- Converted check_victory_conditions.sqf to KPLIB_fnc_checkVictoryConditions using CBA functions
+- Replaced all sleep commands with CBA_fnc_waitAndExecute
+- Implemented recursive function call with CBA_fnc_waitAndExecute for continuous monitoring
+- Added proper error handling and clean exit when victory is achieved
+- Added proper function header with standardized documentation
+- Maintained all original functionality while eliminating blocking calls
+- Updated init_server.sqf to use the new function instead of the script file
+- Added the function to CfgFunctions.hpp in a new KPLIB_game class
+
+## 2024-10-16 - Enhanced Headless Client Integration for LAMBS Waypoints
+- Created new functions for spawning directly on headless clients to preserve LAMBS waypoints
+- Added KPLIB_fnc_spawnGroupOnHC for general purpose group spawning on headless clients
+- Added KPLIB_fnc_spawnPatrolGroupOnHC specifically for patrol groups with LAMBS waypoints
+- Updated fn_manageOnePatrol.sqf to use direct HC spawning for infantry patrols
+- Fixed issue where LAMBS waypoints were lost when transferring groups via setGroupOwner
+- Maintained compatibility with existing headless client functions
+- Improved overall AI behavior by preserving advanced waypoint functionality
+
+## 2024-10-16 - Improved Headless Client Integration and Load Balancing
+- Created KPLIB_fnc_transferGroupToHC for standardized headless client group transfer
+- Updated all spawning functions to consistently use headless client integration
+- Enhanced load balancing by ensuring all units are properly distributed across available headless clients
+- Updated the following key files to use the new system:
+  - functions/fn_spawnVehicle.sqf
+  - functions/fn_spawnRegularSquad.sqf
+  - functions/fn_manageOnePatrol.sqf
+  - scripts/server/battlegroup/spawn_battlegroup.sqf
+  - scripts/server/patrols/manage_one_civilian_patrol.sqf
+- Added detailed logging for tracking headless client operations
+- Maintained existing functionality while improving performance and consistency
+
 ## Files Completed
 - scripts/shared/diagnostics.sqf
 - scripts/shared/kill_manager.sqf
@@ -220,14 +281,10 @@
 - scripts/server/patrols/manage_patrols.sqf (-> functions/fn_managePatrols.sqf)
 - scripts/server/patrols/manage_one_patrol.sqf (-> functions/fn_manageOnePatrol.sqf)
 - scripts/server/ai/patrol_ai.sqf (-> functions/fn_patrolAI.sqf)
+- scripts/server/game/check_victory_conditions.sqf (-> functions/fn_checkVictoryConditions.sqf)
+- scripts/server/game/save_manager.sqf (-> functions/fn_saveManager.sqf)
 
 ## Files Pending Refactor
-- scripts/server/sector/manage_sectors.sqf
-- scripts/server/ai/manage_ai.sqf
-- scripts/server/game/check_victory_conditions.sqf
-- scripts/server/game/save_manager.sqf
-- scripts/server/secondary/convoy_hijack.sqf
-- scripts/server/secondary/fob_hunting.sqf
 - scripts/shared/functions/F_libSpawnMilitiaCrew.sqf
 - scripts/shared/functions/F_libSpawnVehicle.sqf
 - scripts/shared/init_shared.sqf

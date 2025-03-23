@@ -68,7 +68,10 @@ class KPLIB {
         class isClassUAV                {};
         class isRadio                   {};
         class log                       {};
+        class manageOnePatrol           {};
+        class managePatrols             {};
         class monitorSectors            {};
+        class patrolAI                  {};
         class potatoScan                {};
         class protectObject             {};
         class reinforcementsManager     {};
@@ -85,13 +88,16 @@ class KPLIB {
         class sortStorage               {};
         class spawnBuildingSquad        {};
         class spawnCivilians            {};
+        class spawnGroupOnHC            {};
         class spawnGuerillaGroup        {};
         class spawnMilitaryPostSquad    {};
         class spawnMilitiaCrew          {};
+        class spawnPatrolGroupOnHC      {};
         class spawnPersistentUnits      {};
         class spawnRegularSquad         {};
         class spawnVehicle              {};
         class swapInventory             {};
+        class transferGroupToHC         {};
     };
     class functions_curator {
         file = "functions\curator";

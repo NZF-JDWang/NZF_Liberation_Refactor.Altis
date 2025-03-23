@@ -90,12 +90,7 @@ while { GRLIB_endgame == 0 } do {
         _waypoint = _grp addWaypoint [_patrol_startpos , 100];
         _waypoint setWaypointType "CYCLE";
 
-        if ( local _grp ) then {
-            _headless_client = [] call KPLIB_fnc_getLessLoadedHC;
-            if ( !isNull _headless_client ) then {
-                _grp setGroupOwner ( owner _headless_client );
-            };
-        };
+        [_grp] call KPLIB_fnc_transferGroupToHC;
 
         waitUntil {
             sleep (30 + (random 30));

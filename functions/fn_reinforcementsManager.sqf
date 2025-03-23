@@ -26,6 +26,8 @@ params [
 
 // Private function to process reinforcements
 private _fnc_processReinforcements = {
+    params ["_targetSector"];
+    
     private _nearestTower = [markerPos _targetSector] call KPLIB_fnc_getNearestTower;
     private _isSmallSector = _targetSector in sectors_capture;
     
@@ -49,9 +51,9 @@ private _fnc_processReinforcements = {
             {
                 params ["_targetSector", "_isSmallSector"];
                 
-                private _sector_status = [_targetSector] call KPLIB_fnc_getSectorOwnership;
+                private _sector_status = [markerPos _targetSector] call KPLIB_fnc_getSectorOwnership;
                 private _active_sectors = (sectors_allSectors - blufor_sectors - [_targetSector]) select {
-                    [_x] call KPLIB_fnc_getSectorOwnership == GRLIB_side_resistance
+                    [markerPos _x] call KPLIB_fnc_getSectorOwnership == GRLIB_side_resistance
                 };
                 
                 if ((_sector_status == GRLIB_side_resistance) && (count _active_sectors == 0)) then {
@@ -99,15 +101,15 @@ if (_targetSector != "") then {
                     },
                     {
                         params ["_targetSector", "_initialCount"];
-                        call _fnc_processReinforcements;
+                        [_targetSector] call _fnc_processReinforcements;
                     },
                     [_targetSector, _unitCount]
                 ] call CBA_fnc_waitUntilAndExecute;
             } else {
-                call _fnc_processReinforcements;
+                [_targetSector] call _fnc_processReinforcements;
             };
         } else {
-            call _fnc_processReinforcements;
+            [_targetSector] call _fnc_processReinforcements;
         };
     };
 };

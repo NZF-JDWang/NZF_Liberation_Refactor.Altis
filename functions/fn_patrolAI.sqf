@@ -64,7 +64,7 @@ private _pfh = [{
         
         // Clear all existing waypoints
         while {count (waypoints _grp) > 0} do {
-            deleteWaypoint [(waypoints _grp) select 0];
+            deleteWaypoint [_grp, 0];
         };
         
         // Make units follow the leader again
@@ -146,7 +146,7 @@ private _pfh = [{
             
             // Clear all existing waypoints
             while {count (waypoints _grp) > 0} do {
-                deleteWaypoint [(waypoints _grp) select 0];
+                deleteWaypoint [_grp, 0];
             };
             
             // Make units follow the leader again
@@ -211,16 +211,16 @@ private _pfh = [{
                 {
                     private _wp = _grp addWaypoint [markerPos _x, if (_isVehicleGroup) then {400} else {200}];
                     _wp setWaypointType "MOVE";
-                    _wp setWaypointSpeed if (_isVehicleGroup) then {"NORMAL"} else {"LIMITED"};
+                    _wp setWaypointSpeed (if (_isVehicleGroup) then {"NORMAL"} else {"LIMITED"});
                     _wp setWaypointBehaviour "SAFE";
                     _wp setWaypointCombatMode "YELLOW";
-                    _wp setWaypointCompletionRadius if (_isVehicleGroup) then {60} else {30};
+                    _wp setWaypointCompletionRadius (if (_isVehicleGroup) then {60} else {30});
                 } forEach _sectors_patrol;
                 
                 // Return to start position and cycle
                 private _wp = _grp addWaypoint [_patrol_startpos, 300];
                 _wp setWaypointType "MOVE";
-                _wp setWaypointCompletionRadius if (_isVehicleGroup) then {150} else {100};
+                _wp setWaypointCompletionRadius (if (_isVehicleGroup) then {150} else {100});
                 
                 _wp = _grp addWaypoint [_patrol_startpos, 300];
                 _wp setWaypointType "CYCLE";

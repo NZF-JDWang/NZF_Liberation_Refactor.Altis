@@ -52,6 +52,11 @@ private _fnc_spawnNextUnit = {
     // Exit if all units spawned or group no longer exists
     if (_currentIndex >= _maxIndex || isNull _grp) exitWith {
         [_handle] call CBA_fnc_removePerFrameHandler;
+        
+        // Transfer to headless client after all units are spawned
+        if (!isNull _grp) then {
+            [_grp] call KPLIB_fnc_transferGroupToHC;
+        };
     };
     
     // Get next classname to spawn

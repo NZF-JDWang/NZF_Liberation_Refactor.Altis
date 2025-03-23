@@ -394,10 +394,9 @@ private _fnc_setupAttackWaypoints = {
     };
 };
 
-// Wait for paratroopers to load and setup initial waypoints
+// Wait for either the paratroopers to be ready or a timeout (3 seconds)
 [{
     params ["_para_group"];
-    // Wait for either the paratroopers to be ready or a timeout (3 seconds)
     _para_group getVariable ["KPLIB_paradrop_ready", false] || 
     (time > (_para_group getVariable ["KPLIB_paradrop_startTime", time]) + 3)
 }, {

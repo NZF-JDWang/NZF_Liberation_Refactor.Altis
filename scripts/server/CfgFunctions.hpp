@@ -18,3 +18,19 @@ class server_support {
 
     class createSuppModules             {};
 };
+
+// Game functions
+class KPLIB_game {
+    file = "functions";
+    
+    class checkVictoryConditions        {};
+    class saveManager                   {};
+    class spawnBattlegroup              {};
+    class spawnBattlegroupAI            {};
+    class spawnAir                      {};
+    class troopTransport                {};
+    class transferGroupsToHC            {};
+    class readinessIncrease             {};
+    class randomBattlegroups            {};
+    class counterBattlegroup            {};
+};
