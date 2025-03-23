@@ -3,7 +3,7 @@ add_civ_waypoints = compileFinal preprocessFileLineNumbers "scripts\server\ai\ad
 add_defense_waypoints = compileFinal preprocessFileLineNumbers "scripts\server\ai\add_defense_waypoints.sqf";
 battlegroup_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\battlegroup_ai.sqf";
 building_defence_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\building_defence_ai.sqf";
-patrol_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\patrol_ai.sqf";
+// patrol_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\patrol_ai.sqf"; // Replaced by KPLIB_fnc_patrolAI
 prisonner_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\prisonner_ai.sqf";
 troup_transport = compileFinal preprocessFileLineNumbers "scripts\server\ai\troup_transport.sqf";
 
@@ -16,7 +16,7 @@ check_victory_conditions = compileFinal preprocessFileLineNumbers "scripts\serve
 
 // Patrol
 manage_one_civilian_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_civilian_patrol.sqf";
-manage_one_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_patrol.sqf";
+// manage_one_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_patrol.sqf"; // Replaced by KPLIB_fnc_manageOnePatrol
 
 // Secondary objectives
 fob_hunting = compileFinal preprocessFileLineNumbers "scripts\server\secondary\fob_hunting.sqf";
@@ -52,7 +52,7 @@ execVM "scripts\server\game\synchronise_eco.sqf";
 execVM "scripts\server\game\zeus_synchro.sqf";
 execVM "scripts\server\offloading\show_fps.sqf";
 execVM "scripts\server\patrols\civilian_patrols.sqf";
-execVM "scripts\server\patrols\manage_patrols.sqf";
+[] call KPLIB_fnc_managePatrols;
 [] call KPLIB_fnc_reinforcementsResetter;
 execVM "scripts\server\resources\manage_resources.sqf";
 execVM "scripts\server\resources\recalculate_resources.sqf";
