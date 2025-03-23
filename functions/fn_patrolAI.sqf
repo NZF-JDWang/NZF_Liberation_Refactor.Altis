@@ -101,10 +101,7 @@ private _pfh = [{
                     [_grp, _attackPos, 150] call lambs_wp_fnc_taskPatrol;
                     ["Infantry reinforcement using LAMBS taskPatrol at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
                 };
-                
-                // Add indoor movement capability but without wall-hacking
-                [_grp] call lambs_wp_fnc_taskIndoor;
-            };
+            }
         } else {
             // Fallback to vanilla waypoints if LAMBS not available
             private _wp = _grp addWaypoint [_attackPos, 50];
@@ -206,10 +203,7 @@ private _pfh = [{
                             ["Infantry patrol using LAMBS taskCamp", "PATROLS"] call KPLIB_fnc_log;
                         };
                     };
-                    
-                    // Add indoor movement capability without omniscience
-                    [_grp] call lambs_wp_fnc_taskIndoor;
-                };
+                }
             } else {
                 // Fallback to vanilla waypoints if LAMBS not available
                 
