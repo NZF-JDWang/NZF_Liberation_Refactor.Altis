@@ -3,7 +3,7 @@ class liberation_deploy {
     movingEnable = false;
     controlsBackground[] = {};
 
-    controls[] = {"OuterBG", "RecycleBG","OuterBG_F", "InnerBG", "InnerBG_F", "Header","DeployList","DeployButton","DeployMap", "LoadoutsCombo", "LabelDeploy", "LabelLoadout", "MapButton"};
+    controls[] = {"OuterBG", "RecycleBG","OuterBG_F", "InnerBG", "InnerBG_F", "Header","DeployList","DeployButton","DeployMap", "LabelDeploy", "MapButton"};
 
     objects[] = {};
 
@@ -53,7 +53,7 @@ class liberation_deploy {
         x = (0.15 * safezoneW + safezoneX);
         w = (0.15 * safezoneW);
         h = (0.03 * safezoneH);
-        y = 0.23 * safezoneH + safezoneY;
+        y = 0.17 * safezoneH + safezoneY;
         sizeEx = 0.018 * safezoneH;
         text = $STR_SPAWN_POINT;
     };
@@ -61,27 +61,11 @@ class liberation_deploy {
         idc = 201;
         x = 0.15 * safezoneW + safezoneX;
         w = 0.15 * safezoneW;
-        y = 0.26 * safezoneH + safezoneY;
-        h = (0.31 * safezoneH) - (1.5 * BORDERSIZE);
+        y = 0.20 * safezoneH + safezoneY;
+        h = (0.37 * safezoneH) - (1.5 * BORDERSIZE);
         shadow = 2;
         onLBSelChanged="";
     };
-    class LabelLoadout: StdText {
-        x = (0.15 * safezoneW + safezoneX);
-        w = (0.15 * safezoneW);
-        h = (0.03 * safezoneH);
-        y = 0.16 * safezoneH + safezoneY;
-        sizeEx = 0.018 * safezoneH;
-        text = $STR_LOADOUT;
-    };
-    class LoadoutsCombo: StdCombo {
-        idc = 203;
-        x = (0.15 * safezoneW + safezoneX);
-        w = 0.15 * safezoneW;
-        y = 0.19 * safezoneH + safezoneY;
-        h = 0.03 * safezoneH;
-        sizeEx = 0.018 * safezoneH;
-      };
     class DeployButton: StdButton {
         idc = 202;
         x = (0.15 * safezoneW + safezoneX);

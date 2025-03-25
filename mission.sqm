@@ -8,7 +8,7 @@ class EditorData
 	toggles=513;
 	class ItemIDProvider
 	{
-		nextID=6443;
+		nextID=6467;
 	};
 	class MarkerIDProvider
 	{
@@ -16,14 +16,14 @@ class EditorData
 	};
 	class LayerIndexProvider
 	{
-		nextID=1069;
+		nextID=1114;
 	};
 	class Camera
 	{
-		pos[]={21728.041,132.76363,7234.1802};
-		dir[]={-0.12558278,-0.29341429,0.94770098};
-		up[]={-0.038544297,0.95598543,0.29087162};
-		aside[]={0.9913342,0,0.13136476};
+		pos[]={11989.713,155.14545,11994.551};
+		dir[]={0.57800537,-0.47343302,0.66465855};
+		up[]={0.31066936,0.88082981,0.35724416};
+		aside[]={0.75458229,0,-0.65620548};
 	};
 };
 binarizationWanted=0;
@@ -34,6 +34,8 @@ addons[]=
 	"A3_Modules_F_Curator_Curator",
 	"A3_Modules_F",
 	"A3_Characters_F",
+	"A3_Weapons_F",
+	"A3_Characters_F_Tacops",
 	"ace_explosives",
 	"A3_Structures_F_Mil_Fortification",
 	"A3_Structures_F_Mil_TentHangar",
@@ -64,7 +66,7 @@ class AddonsMetaData
 {
 	class List
 	{
-		items=12;
+		items=14;
 		class Item0
 		{
 			className="A3_Ui_F";
@@ -95,54 +97,68 @@ class AddonsMetaData
 		};
 		class Item4
 		{
+			className="A3_Weapons_F";
+			name="Arma 3 Alpha - Weapons and Accessories";
+			author="Bohemia Interactive";
+			url="https://www.arma3.com";
+		};
+		class Item5
+		{
+			className="A3_Characters_F_Tacops";
+			name="Arma 3 Tac-Ops - Characters and Clothing";
+			author="Bohemia Interactive";
+			url="https://www.arma3.com";
+		};
+		class Item6
+		{
 			className="ace_explosives";
 			name="ACE3 - Explosives";
 			author="ACE-Team";
 			url="https://ace3.acemod.org/";
 		};
-		class Item5
+		class Item7
 		{
 			className="A3_Structures_F_Mil";
 			name="Arma 3 - Military Buildings and Structures";
 			author="Bohemia Interactive";
 			url="https://www.arma3.com";
 		};
-		class Item6
+		class Item8
 		{
 			className="A3_Structures_F";
 			name="Arma 3 - Buildings and Structures";
 			author="Bohemia Interactive";
 			url="https://www.arma3.com";
 		};
-		class Item7
+		class Item9
 		{
 			className="ace_sitting";
 			name="ACE3 - Sitting";
 			author="ACE-Team";
 			url="https://ace3.acemod.org/";
 		};
-		class Item8
+		class Item10
 		{
 			className="A3_Structures_F_Households";
 			name="Arma 3 - Houses";
 			author="Bohemia Interactive";
 			url="https://www.arma3.com";
 		};
-		class Item9
+		class Item11
 		{
 			className="A3_Structures_F_Ind";
 			name="Arma 3 - Industrial Structures";
 			author="Bohemia Interactive";
 			url="https://www.arma3.com";
 		};
-		class Item10
+		class Item12
 		{
 			className="ace_logistics_wirecutter";
 			name="ACE3 - Logistics Wire Cutter";
 			author="ACE-Team";
 			url="https://ace3.acemod.org/";
 		};
-		class Item11
+		class Item13
 		{
 			className="A3_Boat_F_Jets";
 			name="Arma 3 Jets - Boats and Submersibles";
@@ -211,8 +227,8 @@ class Mission
 		year=2038;
 		month=6;
 		day=6;
-		hour=8;
-		minute=0;
+		hour=5;
+		minute=20;
 		startFogDecay=0.014;
 		forecastFogDecay=0.014;
 	};
@@ -682,6 +698,16 @@ class Mission
 						description="Platoon Leader (Commander)";
 						isPlayer=1;
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=563;
 					type="B_officer_F";
@@ -719,6 +745,16 @@ class Mission
 						init="removeallWeapons this; removebackpack this;";
 						description="Platoon Sergeant";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=564;
 					type="B_Soldier_SL_F";
@@ -767,6 +803,16 @@ class Mission
 						rank="SERGEANT";
 						description="Squad 1 Leader";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=573;
 					type="B_Soldier_SL_F";
@@ -802,6 +848,16 @@ class Mission
 						rank="CORPORAL";
 						description="Squad 1 Medic";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=575;
 					type="B_medic_F";
@@ -836,6 +892,16 @@ class Mission
 					{
 						description="Squad 1 Engineer";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=577;
 					type="B_engineer_F";
@@ -871,6 +937,16 @@ class Mission
 						rank="CORPORAL";
 						description="Squad 1 Team 1 Leader";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=579;
 					type="B_Soldier_TL_F";
@@ -905,6 +981,16 @@ class Mission
 					{
 						description="Squad 1 Team 1 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=581;
 					type="B_Soldier_F";
@@ -939,6 +1025,16 @@ class Mission
 					{
 						description="Squad 1 Team 1 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=583;
 					type="B_Soldier_F";
@@ -973,6 +1069,16 @@ class Mission
 					{
 						description="Squad 1 Team 1 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=585;
 					type="B_Soldier_F";
@@ -1008,6 +1114,16 @@ class Mission
 						rank="CORPORAL";
 						description="Squad 1 Team 2 Leader";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=587;
 					type="B_Soldier_TL_F";
@@ -1042,6 +1158,16 @@ class Mission
 					{
 						description="Squad 1 Team 2 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=589;
 					type="B_Soldier_F";
@@ -1076,6 +1202,16 @@ class Mission
 					{
 						description="Squad 1 Team 2 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=591;
 					type="B_Soldier_F";
@@ -1110,6 +1246,16 @@ class Mission
 					{
 						description="Squad 1 Team 2 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=593;
 					type="B_Soldier_F";
@@ -1158,6 +1304,16 @@ class Mission
 						rank="SERGEANT";
 						description="Squad 2 Leader";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=595;
 					type="B_Soldier_SL_F";
@@ -1193,6 +1349,16 @@ class Mission
 						rank="CORPORAL";
 						description="Squad 2 Medic";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=596;
 					type="B_medic_F";
@@ -1227,6 +1393,16 @@ class Mission
 					{
 						description="Squad 2 Engineer";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=597;
 					type="B_engineer_F";
@@ -1263,6 +1439,16 @@ class Mission
 						rank="CORPORAL";
 						description="Squad 2 Team 1 Leader";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=598;
 					type="B_Soldier_TL_F";
@@ -1297,6 +1483,16 @@ class Mission
 					{
 						description="Squad 2 Team 1 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=599;
 					type="B_Soldier_F";
@@ -1331,6 +1527,16 @@ class Mission
 					{
 						description="Squad 2 Team 1 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=600;
 					type="B_Soldier_F";
@@ -1365,6 +1571,16 @@ class Mission
 					{
 						description="Squad 2 Team 1 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=601;
 					type="B_Soldier_F";
@@ -1401,6 +1617,16 @@ class Mission
 						rank="CORPORAL";
 						description="Squad 2 Team 2 Leader";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=602;
 					type="B_Soldier_TL_F";
@@ -1435,6 +1661,16 @@ class Mission
 					{
 						description="Squad 2 Team 2 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=603;
 					type="B_Soldier_F";
@@ -1469,6 +1705,16 @@ class Mission
 					{
 						description="Squad 2 Team 2 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=604;
 					type="B_Soldier_F";
@@ -1503,6 +1749,16 @@ class Mission
 					{
 						description="Squad 2 Team 2 Rifleman";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=605;
 					type="B_Soldier_F";
@@ -1590,6 +1846,16 @@ class Mission
 						rank="LIEUTENANT";
 						description="MedEvac Pilot";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=620;
 					type="B_Helipilot_F";
@@ -1625,6 +1891,16 @@ class Mission
 						rank="SERGEANT";
 						description="MedEvac Co-Pilot";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=622;
 					type="B_Helipilot_F";
@@ -1660,6 +1936,16 @@ class Mission
 						rank="CORPORAL";
 						description="MedEvac Medic";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=624;
 					type="B_medic_F";
@@ -1695,6 +1981,16 @@ class Mission
 						rank="CORPORAL";
 						description="MedEvac Medic";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=626;
 					type="B_medic_F";
@@ -1743,6 +2039,16 @@ class Mission
 						rank="LIEUTENANT";
 						description="Logistics Pilot";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=628;
 					type="B_Helipilot_F";
@@ -1778,6 +2084,16 @@ class Mission
 						rank="CORPORAL";
 						description="Logistics Engineer";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=630;
 					type="B_engineer_F";
@@ -1813,6 +2129,16 @@ class Mission
 						rank="CORPORAL";
 						description="Logistics Demolition Expert";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=632;
 					type="B_soldier_exp_F";
@@ -1861,6 +2187,16 @@ class Mission
 						rank="LIEUTENANT";
 						description="CAS Pilot";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=634;
 					type="B_Helipilot_F";
@@ -1896,6 +2232,16 @@ class Mission
 						rank="LIEUTENANT";
 						description="CAS Pilot";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=636;
 					type="B_Helipilot_F";
@@ -1944,6 +2290,16 @@ class Mission
 						rank="SERGEANT";
 						description="UAV and Intelligence";
 						isPlayable=1;
+						class Inventory
+						{
+							class uniform
+							{
+								typeName="U_O_officer_noInsignia_hex_F";
+								isBackpack=0;
+							};
+							map="ItemMap";
+							compass="ItemCompass";
+						};
 					};
 					id=638;
 					type="B_soldier_UAV_F";

@@ -231,6 +231,9 @@ private _fnc_startAttackTimer = {
                                     [] call KPLIB_fnc_doSave;
                                     stats_sectors_lost = stats_sectors_lost + 1;
                                     
+                                    // Fire the sector_lost event for frontline mechanic
+                                    ["sector_lost", [_sector]] call CBA_fnc_localEvent;
+                                    
                                     // Handle production buildings in lost sector
                                     {
                                         if (_sector in _x) exitWith {

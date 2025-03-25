@@ -264,13 +264,13 @@
 - Added detailed logging for tracking headless client operations
 - Maintained existing functionality while improving performance and consistency
 
-## 2024-03-25 - Fixed Building Defence AI Logging
+## 2025-03-25 - Fixed Building Defence AI Logging
 - Fixed logging format in building_defence_ai.sqf to properly handle ratio values
 - Updated all logging calls to use format command for proper string formatting
 - Ensured consistent debug logging across all AI behavior changes
 - Maintained existing AI behavior while fixing logging errors
 
-## 2024-03-25 - Enhanced Building Defence AI
+## 2025-03-25 - Enhanced Building Defence AI
 - Improved building defence AI with better LAMBS integration
 - Added dynamic behavior selection based on enemy presence
 - Implemented randomized defensive behaviors (garrison, patrol, camp)

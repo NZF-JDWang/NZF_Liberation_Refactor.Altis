@@ -63,8 +63,8 @@ if (_classname in opfor_choppers) then {
     // Log chopper creation
     diag_log format ["[KPLIB] Spawned flying vehicle: %1 (Type: %2) at %3", _newvehicle, _classname, _spawnpos];
 
-    // Create crew
-    createVehicleCrew _newvehicle;
+    // Create crew - use helicopter pilots
+    [_newvehicle, true, opfor_heli_pilot] call KPLIB_fnc_spawnMilitiaCrew;
 
     // Mark crew members with reference to their parent vehicle
     {
@@ -72,29 +72,48 @@ if (_classname in opfor_choppers) then {
         diag_log format ["[KPLIB] Crew member %1 (Type: %2) assigned to vehicle %3", _x, typeOf _x, _newvehicle];
     } forEach (crew _newvehicle);
 } else {
-    _newvehicle = _classname createVehicle _spawnpos;
-    _newvehicle allowDamage false;
+    if (_classname in opfor_air) then {
+        // This is a fixed-wing aircraft
+        _newvehicle = createVehicle [_classname, _spawnpos, [], 0, 'FLY'];
+        _newvehicle flyInHeight (300 + (random 200));
+        _newvehicle allowDamage false;
+        
+        // Log jet creation
+        diag_log format ["[KPLIB] Spawned jet: %1 (Type: %2) at %3", _newvehicle, _classname, _spawnpos];
+        
+        // Create crew - use jet pilots
+        [_newvehicle, true, opfor_jet_pilot] call KPLIB_fnc_spawnMilitiaCrew;
+        
+        // Mark crew members with reference to their parent vehicle
+        {
+            _x setVariable ["KPLIB_parentVehicle", _newvehicle, true];
+            diag_log format ["[KPLIB] Crew member %1 (Type: %2) assigned to vehicle %3", _x, typeOf _x, _newvehicle];
+        } forEach (crew _newvehicle);
+    } else {
+        _newvehicle = _classname createVehicle _spawnpos;
+        _newvehicle allowDamage false;
 
-    [_newvehicle] call KPLIB_fnc_allowCrewInImmobile;
-    
-    // Log ground vehicle creation
-    diag_log format ["[KPLIB] Spawned ground vehicle: %1 (Type: %2) at %3", _newvehicle, _classname, _spawnpos];
+        [_newvehicle] call KPLIB_fnc_allowCrewInImmobile;
+        
+        // Log ground vehicle creation
+        diag_log format ["[KPLIB] Spawned ground vehicle: %1 (Type: %2) at %3", _newvehicle, _classname, _spawnpos];
 
-    // Randomize direction and reset position and vector
-    if (_rndDir) then {
-        _newvehicle setDir (random 360);
+        // Randomize direction and reset position and vector
+        if (_rndDir) then {
+            _newvehicle setDir (random 360);
+        };
+        _newvehicle setPos _spawnpos;
+        _newvehicle setVectorUp surfaceNormal position _newvehicle;
+
+        // Mark vehicle for proper crew assignment later
+        // (Crew will be created after all vehicle initialization)
+        
+        // Mark any existing crew members with reference to their parent vehicle
+        {
+            _x setVariable ["KPLIB_parentVehicle", _newvehicle, true];
+            diag_log format ["[KPLIB] Crew member %1 (Type: %2) assigned to vehicle %3", _x, typeOf _x, _newvehicle];
+        } forEach (crew _newvehicle);
     };
-    _newvehicle setPos _spawnpos;
-    _newvehicle setVectorUp surfaceNormal position _newvehicle;
-
-    // Create crew
-    createVehicleCrew _newvehicle;
-    
-    // Mark crew members with reference to their parent vehicle
-    {
-        _x setVariable ["KPLIB_parentVehicle", _newvehicle, true];
-        diag_log format ["[KPLIB] Crew member %1 (Type: %2) assigned to vehicle %3", _x, typeOf _x, _newvehicle];
-    } forEach (crew _newvehicle);
 };
 
 // Explicitly set capture status to false
@@ -118,15 +137,20 @@ if (!isNil "_nearestSector" && {_nearestSector != ""}) then {
 if (_classname in militia_vehicles) then {
     [_newvehicle] call KPLIB_fnc_spawnMilitiaCrew;
 } else {
-    private _grp = createGroup [GRLIB_side_enemy, true];
-    private _crew = units (createVehicleCrew _newvehicle);
-    _crew joinSilent _grp;
-    
-    // Add MPKilled EH to crew members
-    {_x addMPEventHandler ["MPKilled", {[{_this call kill_manager}, _this] call CBA_fnc_directCall}];} forEach _crew;
-    
-    // Transfer to headless client
-    [_grp] call KPLIB_fnc_transferGroupToHC;
+    // Skip for air vehicles as they already have crews assigned earlier
+    if (!(_classname in opfor_choppers) && !(_classname in opfor_air)) then {
+        // Create appropriate crew for the ground vehicle type
+        private _crewType = if (_newvehicle isKindOf "Tank" || _newvehicle isKindOf "Wheeled_APC_F") then {
+            // Use tank crew for armored vehicles
+            opfor_crewman
+        } else {
+            // Use rifleman for other vehicles
+            opfor_rifleman
+        };
+        
+        // Create custom crew with appropriate units
+        [_newvehicle, true, _crewType] call KPLIB_fnc_spawnMilitiaCrew;
+    };
 };
 
 // Add MPKilled EH and enable damage

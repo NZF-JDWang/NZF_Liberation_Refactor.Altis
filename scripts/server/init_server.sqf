@@ -29,6 +29,15 @@ ied_manager = compileFinal preprocessFileLineNumbers "scripts\server\sector\ied_
 manage_one_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\manage_one_sector.sqf";
 wait_to_spawn_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\wait_to_spawn_sector.sqf";
 
+// Compile frontline mechanics functions
+NZF_fnc_updateCapturableSectors = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_updateCapturableSectors.sqf";
+NZF_fnc_updateSectorMarkers = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_updateSectorMarkers.sqf";
+NZF_fnc_validateSectorCapture = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_validateSectorCapture.sqf";
+NZF_fnc_validateFOBPlacement = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_validateFOBPlacement.sqf";
+NZF_fnc_resetInvalidSector = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_resetInvalidSector.sqf";
+
+addMissionEventHandler ["BuildingChanged", {_this spawn kill_manager}];
+
 // Globals
 active_sectors = []; publicVariable "active_sectors";
 
@@ -109,6 +118,37 @@ switch (KP_liberation_preset_opfor) do {
         ];
     };
 };
+
+// Initialize frontline mechanic
+// Make sure NZF_first_fob_placed is initialized
+if (isNil "NZF_first_fob_placed") then {
+    NZF_first_fob_placed = false;
+    publicVariable "NZF_first_fob_placed";
+};
+
+// Initialize sector markers properly
+// First set all sectors as invalid
+NZF_capturable_sectors = [];
+publicVariable "NZF_capturable_sectors";
+NZF_invalid_capture_sectors = sectors_allSectors - blufor_sectors;
+publicVariable "NZF_invalid_capture_sectors";
+
+// Force update all sector markers to grey
+[[]] call NZF_fnc_updateSectorMarkers;
+
+// Wait a bit then update capturable sectors once more to ensure all markers are set correctly
+[
+    {
+        [] call NZF_fnc_updateCapturableSectors;
+    },
+    [],
+    2
+] call CBA_fnc_waitAndExecute;
+
+// Add event handler to update capturable sectors when a sector is captured
+["sector_captured", {[] call NZF_fnc_updateCapturableSectors}] call CBA_fnc_addEventHandler;
+// Add event handler to update capturable sectors when a sector is lost
+["sector_lost", {[] call NZF_fnc_updateCapturableSectors}] call CBA_fnc_addEventHandler;
 
 // Civil Reputation
 execVM "scripts\server\civrep\init_module.sqf";

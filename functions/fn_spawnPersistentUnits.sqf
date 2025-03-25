@@ -42,6 +42,17 @@ if !(_sector in keys KPLIB_persistent_sectors) exitWith {
 private _sectorUnits = KPLIB_persistent_sectors get _sector;
 private _totalSpawned = 0;
 
+// Debug the content of the sector units data
+if (count _sectorUnits == 0) exitWith {
+    diag_log format ["[KPLIB] Sector %1 persistence - Found empty unit data array", _sector];
+    // If empty, clear the flag to allow normal unit spawning
+    missionNamespace setVariable [format ["KPLIB_sector_%1_saved", _sector], false, true];
+    KPLIB_persistent_sectors deleteAt _sector;
+    publicVariable "KPLIB_persistent_sectors";
+    // Return early 
+    _spawnedUnits
+};
+
 diag_log format ["[KPLIB] Sector %1 persistence - Found %2 unit data entries to spawn", _sector, count _sectorUnits];
 
 // Create a local copy of the data before processing to prevent race conditions
@@ -82,7 +93,7 @@ private _sectorUnitsLocal = +_sectorUnits;
             _data params ["_leaderPos", "_leaderDir", "_leaderPathDisabled", "_groupData"];
             
             // Create the enemy group
-            private _grp = createGroup GRLIB_side_enemy;
+            private _grp = createGroup [GRLIB_side_enemy, true];
             private _groupUnitsSpawned = 0;
             
             {
@@ -133,6 +144,12 @@ private _sectorUnitsLocal = +_sectorUnits;
                 // Disable PATH if needed
                 if (_pathDisabled) then {
                     _unit disableAI "PATH";
+                };
+                
+                // Explicitly ensure unit is on the correct side
+                if (side _unit != GRLIB_side_enemy) then {
+                    diag_log format ["[KPLIB] Sector %1 persistence - Unit has incorrect side: %2, forcing to %3", _sector, side _unit, GRLIB_side_enemy];
+                    [_unit] joinSilent _grp;
                 };
                 
                 // Track that this unit belongs to this sector for future persistence
@@ -208,7 +225,7 @@ private _sectorUnitsLocal = +_sectorUnits;
             // Create crew
             private _crewSpawned = 0;
             if (count _crewData > 0) then {
-                private _grp = createGroup GRLIB_side_enemy;
+                private _grp = createGroup [GRLIB_side_enemy, true];
                 
                 {
                     if (!(_x isEqualType [])) then {
@@ -247,6 +264,12 @@ private _sectorUnitsLocal = +_sectorUnits;
                     
                     // Mark crew as belonging to this sector
                     _crewMember setVariable ["KPLIB_sectorOrigin", _sector, true];
+                    
+                    // Explicitly ensure crew is on the correct side
+                    if (side _crewMember != GRLIB_side_enemy) then {
+                        diag_log format ["[KPLIB] Sector %1 persistence - Crew has incorrect side: %2, forcing to %3", _sector, side _crewMember, GRLIB_side_enemy];
+                        [_crewMember] joinSilent _grp;
+                    };
                     
                     // Disable PATH if needed
                     if (_pathDisabled) then {
@@ -318,7 +341,7 @@ private _sectorUnitsLocal = +_sectorUnits;
             };
             
             // Create the unit with error handling
-            private _grp = createGroup GRLIB_side_enemy;
+            private _grp = createGroup [GRLIB_side_enemy, true];
             private _unit = objNull;
             
             try {
@@ -339,6 +362,12 @@ private _sectorUnitsLocal = +_sectorUnits;
             _unit setPosASL _unitPos;
             _unit setDir _unitDir;
             _unit setDamage _unitDamage;
+            
+            // Explicitly ensure unit is on the correct side
+            if (side _unit != GRLIB_side_enemy) then {
+                diag_log format ["[KPLIB] Sector %1 persistence - Single unit has incorrect side: %2, forcing to %3", _sector, side _unit, GRLIB_side_enemy];
+                [_unit] joinSilent _grp;
+            };
             
             // Mark unit as belonging to this sector
             _unit setVariable ["KPLIB_sectorOrigin", _sector, true];
@@ -364,13 +393,63 @@ private _sectorUnitsLocal = +_sectorUnits;
     };
 } forEach _sectorUnitsLocal;
 
-// Clear the persistence data now that we've used it
-KPLIB_persistent_sectors deleteAt _sector;
-publicVariable "KPLIB_persistent_sectors";
+// Validation step - check all spawned units 
+private _validUnits = 0;
+private _invalidUnits = 0;
+{
+    if (!isNull _x && {alive _x}) then {
+        if (_x isKindOf "Man") then {
+            if (side _x != GRLIB_side_enemy) then {
+                diag_log format ["[KPLIB] Sector %1 persistence - Found unit with incorrect side: %2", _sector, side _x];
+                _invalidUnits = _invalidUnits + 1;
+                
+                // Try to force the unit to the enemy side
+                private _newGrp = createGroup [GRLIB_side_enemy, true];
+                [_x] joinSilent _newGrp;
+                
+                // Set up defense waypoints for this new group
+                [_newGrp, _sectorpos] call add_defense_waypoints;
+            } else {
+                _validUnits = _validUnits + 1;
+            };
+        } else {
+            // For vehicles, check if crew is on enemy side
+            {
+                if (side _x != GRLIB_side_enemy) then {
+                    diag_log format ["[KPLIB] Sector %1 persistence - Found vehicle crew with incorrect side: %2", _sector, side _x];
+                    _invalidUnits = _invalidUnits + 1;
+                    
+                    // Try to force the crew to the enemy side
+                    private _newGrp = createGroup [GRLIB_side_enemy, true];
+                    [_x] joinSilent _newGrp;
+                } else {
+                    _validUnits = _validUnits + 1;
+                };
+            } forEach (crew _x);
+        };
+    } else {
+        _invalidUnits = _invalidUnits + 1;
+    };
+} forEach _spawnedUnits;
 
-// Clear the saved flag as well
-missionNamespace setVariable [format ["KPLIB_sector_%1_saved", _sector], false, true];
-diag_log format ["[KPLIB] Sector %1 persistence - Spawned %2 units", _sector, _totalSpawned];
+diag_log format ["[KPLIB] Sector %1 persistence validation - Valid units: %2, Invalid units: %3", _sector, _validUnits, _invalidUnits];
+
+// Only clear persistence if we actually have units that spawned
+if (_validUnits > 0) then {
+    // Clear the persistence data now that we've used it
+    KPLIB_persistent_sectors deleteAt _sector;
+    publicVariable "KPLIB_persistent_sectors";
+
+    // Clear the saved flag as well
+    missionNamespace setVariable [format ["KPLIB_sector_%1_saved", _sector], false, true];
+    diag_log format ["[KPLIB] Sector %1 persistence - Spawned %2 units", _sector, _totalSpawned];
+} else {
+    // Something went wrong - don't clear persistence data yet
+    diag_log format ["[KPLIB] Sector %1 persistence - Failed to spawn valid units, keeping persistence data", _sector];
+    
+    // Clear the saved flag to force normal unit spawning for this session
+    missionNamespace setVariable [format ["KPLIB_sector_%1_saved", _sector], false, true];
+}; 
 
 // Return all spawned units
 _spawnedUnits 

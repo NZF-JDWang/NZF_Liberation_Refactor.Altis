@@ -83,20 +83,61 @@ while { dialog && (alive player) && edit_loadout == 0 } do {
     if ( load_loadout > 0 ) then {
         private _loaded_loadout = _loadouts_data select (lbCurSel 201);
         if (KP_liberation_ace && KP_liberation_arsenal_type) then {
-            player setUnitLoadout (_loaded_loadout select 1);
-        } else {
-            [player, [profileNamespace, _loaded_loadout]] call BIS_fnc_loadInventory;
-        };
-
-        if (KP_liberation_arsenalUsePreset) then {
-            if ([_backpack] call KPLIB_fnc_checkGear) then {
-                hint format [ localize "STR_HINT_LOADOUT_LOADED", _loaded_loadout param [0]];
+            // Minimal approach - only use loadout name and ACE functions
+            private _name = "";
+            
+            // Extract name only
+            if (typeName _loaded_loadout == "ARRAY" && {count _loaded_loadout > 0}) then {
+                _name = _loaded_loadout param [0, "Unknown Loadout"];
+            } else {
+                _name = "Unknown Loadout";
+            };
+            
+            diag_log format ["[KP LIBERATION] Attempting to load ACE loadout by name only: %1", _name];
+            
+            // Use ACE functions only - avoid any direct array handling
+            private _success = false;
+            
+            // Try to use ACE's loadout function
+            if (!isNil "ace_arsenal_fnc_loadLoadout") then {
+                try {
+                    _success = [player, _name] call ace_arsenal_fnc_loadLoadout;
+                    
+                    if (_success) then {
+                        diag_log "[KP LIBERATION] Successfully loaded ACE loadout using ace_arsenal_fnc_loadLoadout";
+                    } else {
+                        diag_log "[KP LIBERATION] ace_arsenal_fnc_loadLoadout failed to load the loadout";
+                    };
+                } catch {
+                    diag_log format ["[KP LIBERATION] Error in ace_arsenal_fnc_loadLoadout: %1", _exception];
+                };
+            } else {
+                diag_log "[KP LIBERATION] ace_arsenal_fnc_loadLoadout function not found";
+            };
+            
+            // If we couldn't load it through ACE's function, inform the user
+            if (_success) then {
+                hint format [localize "STR_HINT_LOADOUT_LOADED", _name];
+                if (KP_liberation_arsenalUsePreset) then {
+                    [_backpack] call KPLIB_fnc_checkGear;
+                };
+            } else {
+                hint format ["Could not apply ACE loadout '%1'. Try using the ACE Arsenal directly.", _name];
             };
         } else {
-            hint format [ localize "STR_HINT_LOADOUT_LOADED", _loaded_loadout param [0]];
+            // Standard BI Arsenal loadout
+            [player, [profileNamespace, _loaded_loadout]] call BIS_fnc_loadInventory;
+            
+            if (KP_liberation_arsenalUsePreset) then {
+                if ([_backpack] call KPLIB_fnc_checkGear) then {
+                    hint format [localize "STR_HINT_LOADOUT_LOADED", _loaded_loadout param [0]];
+                };
+            } else {
+                hint format [localize "STR_HINT_LOADOUT_LOADED", _loaded_loadout param [0]];
+            };
         };
 
-        if ( exit_on_load == 1 ) then {
+        if (exit_on_load == 1) then {
             closeDialog 0;
         };
         load_loadout = 0;

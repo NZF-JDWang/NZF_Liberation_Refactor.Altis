@@ -25,6 +25,11 @@ opfor_medic = "I_medic_F";                                              // Comba
 opfor_engineer = "I_engineer_F";                                        // Engineer
 opfor_paratrooper = "B_soldier_PG_F";                                   // Paratrooper
 
+// Vehicle crew
+opfor_crewman = "I_crew_F";                                             // Tank Crew
+opfor_heli_pilot = "I_helipilot_F";                                     // Helicopter Pilot
+opfor_jet_pilot = "I_Fighter_Pilot_F";                                  // Jet Pilot
+
 // Enemy vehicles used by secondary objectives.
 opfor_mrap = "I_MRAP_03_F";                                             // M-ATV
 opfor_mrap_armed = "I_MRAP_03_hmg_F";                                   // MATV (HMG)

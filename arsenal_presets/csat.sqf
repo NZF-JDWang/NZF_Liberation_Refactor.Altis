@@ -130,48 +130,30 @@ GRLIB_arsenal_items = [
     "U_O_CombatUniform_ocamo",                                      // Fatigues (Hex) [CSAT]
     "U_O_CombatUniform_oucamo",                                     // Fatigues (Urban) [CSAT]
     "U_O_FullGhillie_ard",                                          // Full Ghillie (Arid) [CSAT]
-    "U_O_FullGhillie_lsh",                                          // Full Ghillie (Lush) [CSAT]
-    "U_O_FullGhillie_sard",                                         // Full Ghillie (Semi-Arid) [CSAT]
-    "U_O_GhillieSuit",                                              // Ghillie Suit [CSAT]
     "U_O_officer_noInsignia_hex_F",                                 // Light Fatigues (Hex)
     "U_O_OfficerUniform_ocamo",                                     // Officer Fatigues (Hex)
     "U_O_PilotCoveralls",                                           // Pilot Coveralls [CSAT]
     "U_O_SpecopsUniform_ocamo",                                     // Recon Fatigues (Hex)
     "U_O_T_FullGhillie_tna_F",                                      // Full Ghillie (Jungle) [CSAT]
-    "U_O_T_Officer_F",                                              // Officer Fatigues (Green Hex) [CSAT]
-    "U_O_T_Sniper_F",                                               // Ghillie Suit (Green Hex) [CSAT]
-    "U_O_T_Soldier_F",                                              // Fatigues (Green Hex) [CSAT]
-    "U_O_V_Soldier_Viper_F",                                        // Special Purpose Suit (Green Hex)
     "U_O_V_Soldier_Viper_hex_F",                                    // Special Purpose Suit (Hex)
-    "U_O_Wetsuit",                                                  // Wetsuit [CSAT]
 
     // Headgear
-    "H_Bandanna_cbr",                                               // Bandana (Coyote)
-    "H_Bandanna_gry",                                               // Bandana (Black)
-    "H_Bandanna_khk",                                               // Bandana (Khaki)
     "H_Beret_CSAT_01_F",                                            // Beret (Red) [CSAT]
     "H_Cap_blk",                                                    // Cap (Black)
     "H_Cap_brn_SPECOPS",                                            // Cap [OPFOR]
     "H_CrewHelmetHeli_O",                                           // Heli Crew Helmet [CSAT]
     "H_HelmetCrew_O_ghex_F",                                        // Crew Helmet (Green Hex) [CSAT]
     "H_HelmetCrew_O",                                               // Crew Helmet [CSAT]
-    "H_HelmetLeaderO_ghex_F",                                       // Defender Helmet (Green Hex)
     "H_HelmetLeaderO_ocamo",                                        // Defender Helmet (Hex)
     "H_HelmetLeaderO_oucamo",                                       // Defender Helmet (Urban)
-    "H_HelmetO_ghex_F",                                             // Protector Helmet (Green Hex)
     "H_HelmetO_ocamo",                                              // Protector Helmet (Hex)
     "H_HelmetO_oucamo",                                             // Protector Helmet (Urban)
-    "H_HelmetO_ViperSP_ghex_F",                                     // Special Purpose Helmet (Green Hex)
     "H_HelmetO_ViperSP_hex_F",                                      // Special Purpose Helmet (Hex)
     "H_HelmetSpecO_blk",                                            // Assassin Helmet (Black)
-    "H_HelmetSpecO_ghex_F",                                         // Assassin Helmet (Green Hex)
     "H_HelmetSpecO_ocamo",                                          // Assassin Helmet (Hex)
-    "H_MilCap_ghex_F",                                              // Military Cap (Green Hex)
     "H_MilCap_ocamo",                                               // Military Cap (Hex)
     "H_PilotHelmetFighter_O",                                       // Pilot Helmet [CSAT]
     "H_PilotHelmetHeli_O",                                          // Heli Pilot Helmet [CSAT]
-    "H_Shemag_olive",                                               // Shemag (Olive)
-    "H_ShemagOpen_tan",                                             // Shemag (Tan)
     "H_Tank_black_F",                                               // Crew Helmet (Soft) [CSAT]
     "H_WirelessEarpiece_F",                                         // Wireless Earpiece
 

@@ -84,7 +84,7 @@ heavy_vehicles = [
     ["O_APC_Tracked_02_AA_F",300,250,175],                              // Tigris
     ["O_MBT_02_cannon_F",500,400,250],                                  // T-100
     ["O_MBT_04_cannon_F",550,450,250],                                  // T-14
-    ["O_MBT_04_command_F",550,500,250],                                 // T-14K
+    ["O_MBT_02_railgun_F",750,1500,100],                                 // T-14K
     ["O_MBT_02_arty_F",600,1250,300]                                    // Sochor
 ];
 
@@ -321,9 +321,13 @@ blufor_squad_para = [
     Which base locks a vehicle is randomized on the first start of the campaign.
 */
 elite_vehicles = [
+    "O_UGV_01_rcws_F",                                                  // UGV Saif (RCWS)
+    "O_APC_Tracked_02_AA_F",                                            // Tigris
+    "O_MBT_02_cannon_F",                                                // T-100
     "O_MBT_04_cannon_F",                                                // T-14
-    "O_MBT_04_command_F",                                               // T-14K
+    "O_MBT_02_railgun_F",                                               // T100X
     "O_MBT_02_arty_F",                                                  // Sochor
+    "O_Heli_Light_02_dynamicLoadout_F",                                 // Ka-60 Kasatka
     "O_Heli_Attack_02_dynamicLoadout_F",                                // Kajman
     "O_UAV_02_dynamicLoadout_F",                                        // YABHON
     "O_T_UAV_04_CAS_F",                                                 // Burraq

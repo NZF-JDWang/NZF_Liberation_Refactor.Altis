@@ -6,13 +6,14 @@
     License: MIT License - http://www.opensource.org/licenses/MIT
 
     Description:
-        Returns the current Potato 01, if alive.
+        Returns the current Potato 01 object, which is the huron (heavy transport helicopter).
+        Also known as SPARTAN 6.
 
     Parameter(s):
         NONE
 
     Returns:
-        Potato 01 [OBJECT]
+        SPARTAN 6 [OBJECT]
 */
 
 private _potatoes = vehicles select {typeof _x == huron_typename && alive _x};

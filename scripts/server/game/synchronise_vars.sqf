@@ -18,6 +18,7 @@ waitUntil{!isNil "KP_liberation_guerilla_strength"};
 waitUntil{!isNil "infantry_weight"};
 waitUntil{!isNil "armor_weight"};
 waitUntil{!isNil "air_weight"};
+waitUntil{!isNil "GRLIB_all_fobs"};
 waitUntil {save_is_loaded};
 
 private _KP_liberation_fob_resources_old = [];
@@ -37,6 +38,7 @@ private _KP_liberation_guerilla_strength_old = -999;
 private _infantry_weight_old = -1;
 private _armor_weight_old = -1;
 private _air_weight_old = -1;
+private _GRLIB_all_fobs_old = [];
 
 while {true} do {
     waitUntil {sleep 0.25;
@@ -57,6 +59,7 @@ while {true} do {
         || _infantry_weight_old != infantry_weight
         || _armor_weight_old != armor_weight
         || _air_weight_old != air_weight
+        || !(_GRLIB_all_fobs_old isEqualTo GRLIB_all_fobs)
     };
 
     if (KP_liberation_guerilla_strength < 0) then {KP_liberation_guerilla_strength = 0;};
@@ -79,9 +82,11 @@ while {true} do {
         KP_liberation_guerilla_strength,
         infantry_weight,
         armor_weight,
-        air_weight
+        air_weight,
+        GRLIB_all_fobs
     ];
     publicVariable "sync_vars";
+    publicVariable "GRLIB_all_fobs"; // Ensure FOB positions are always synchronized
 
     _KP_liberation_fob_resources_old = +KP_liberation_fob_resources;
     _KP_liberation_supplies_global_old = KP_liberation_supplies_global;
@@ -100,4 +105,5 @@ while {true} do {
     _infantry_weight_old = infantry_weight;
     _armor_weight_old = armor_weight;
     _air_weight_old = air_weight;
+    _GRLIB_all_fobs_old = +GRLIB_all_fobs;
 };

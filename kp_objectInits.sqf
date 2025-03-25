@@ -24,11 +24,6 @@
 */
 
 KPLIB_objectInits = [
-    // Set KP logo on white flag
-    [
-        ["Flag_White_F"],
-        {_this setFlagTexture "res\flag_kp_co.paa";}
-    ],
 
     // Add helipads to zeus, as they can't be recycled after built
     [
@@ -103,6 +98,13 @@ KPLIB_objectInits = [
     [
         ["gm_ge_army_kat1_454_cargo", "gm_ge_army_kat1_454_cargo_win"],
         {_this animateSource ["cover_unhide", 0, true];}
+    ],
+
+    [
+        ["O_T_VTOL_02_infantry_dynamicLoadout_F", "O_T_VTOL_02_vehicle_dynamicLoadout_F"],
+        {
+            [_this,	["Hex",1],true] call BIS_fnc_initVehicle; 
+        }
     ],
 
     // Make sure a slingloaded object is local to the helicopter pilot (avoid desync and rope break)

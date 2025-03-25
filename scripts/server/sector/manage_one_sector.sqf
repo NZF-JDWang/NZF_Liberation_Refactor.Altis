@@ -444,19 +444,50 @@ if (isNil "KPLIB_activated_sectors") then {
         
         // Check for active capture conditions
         if (([_sectorpos, _local_capture_size] call KPLIB_fnc_getSectorOwnership == GRLIB_side_friendly) && (GRLIB_endgame == 0)) then {
-            diag_log format ["[KPLIB] Sector %1 - conditions met for capture, calling liberation", _sector];
-            if (isServer) then {
-                [_sector] call sector_liberated_remote_call;
+            // Validate if the sector is capturable based on frontline mechanic
+            if ([_sector] call NZF_fnc_validateSectorCapture) then {
+                // Additional check for enemy presence
+                private _enemiesInSector = [_sectorpos, _local_capture_size, GRLIB_side_enemy] call KPLIB_fnc_getUnitsCount;
+                
+                if (_enemiesInSector > 0) then {
+                    diag_log format ["[KPLIB] Sector %1 - Enemies still present (%2) despite capture conditions being met - waiting for elimination", _sector, _enemiesInSector];
+                } else {
+                    diag_log format ["[KPLIB] Sector %1 - conditions met for capture, calling liberation", _sector];
+                    if (isServer) then {
+                        [_sector] call sector_liberated_remote_call;
+                    } else {
+                        [_sector] remoteExec ["sector_liberated_remote_call", 2];
+                    };
+                    
+                    // Clean up PFH
+                    [_handle] call CBA_fnc_removePerFrameHandler;
+                }
             } else {
-                [_sector] remoteExec ["sector_liberated_remote_call", 2];
+                diag_log format ["[KPLIB] Sector %1 - invalid capture attempt (not a frontline sector)", _sector];
+                // Send notification to players
+                [6] remoteExec ["KPLIB_fnc_crGlobalMsg", 0];
+                
+                // Reset the sector if all players leave
+                if (_sector in NZF_invalid_capture_sectors) then {
+                    // Check the sector on next tick to see if players left
+                    _args set [9, true]; // Set flag for invalid capture attempt
+                } else {
+                    NZF_invalid_capture_sectors pushBack _sector;
+                    publicVariable "NZF_invalid_capture_sectors";
+                    _args set [9, true]; // Set flag for invalid capture attempt
+                };
             };
-            
-            // Clean up PFH
-            [_handle] call CBA_fnc_removePerFrameHandler;
         };
         
         // Check for player/friendly presence
         private _friendlies_near = ([_sectorpos, GRLIB_sector_size, GRLIB_side_friendly] call KPLIB_fnc_getUnitsCount);
+        
+        // Check if this is an invalid capture attempt and players have left
+        if (_args param [9, false] && _friendlies_near == 0) then {
+            diag_log format ["[KPLIB] Sector %1 - invalid capture attempt and players left, resetting sector", _sector];
+            [_sector] call NZF_fnc_resetInvalidSector;
+            _args set [9, false]; // Reset the invalid capture flag
+        };
         
         // If no friendlies (players) are present, decrement tickets
         if (_friendlies_near == 0) then {

@@ -50,6 +50,9 @@ if ((random 100) <= KP_liberation_cr_wounded_chance || (count blufor_sectors) ==
 asymm_blocked_sectors pushBack [_liberated_sector, time];
 publicVariable "asymm_blocked_sectors";
 
+// Fire the sector_captured event for frontline mechanic
+["sector_captured", [_liberated_sector]] call CBA_fnc_localEvent;
+
 [] spawn check_victory_conditions;
 
 [{

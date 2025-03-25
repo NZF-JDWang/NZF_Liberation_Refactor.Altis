@@ -1,0 +1,183 @@
+# LIBERATION FRONTLINE MECHANIC IMPLEMENTATION PLAN
+
+## OVERVIEW
+This feature will constrain sector capture and FOB placement to create a progressive frontline gameplay experience. Players will only be able to capture sectors that are the nearest sector adjacent to friendly territory and place FOBs near existing friendly sectors.
+
+## KEY REQUIREMENTS
+1. For each friendly sector, only the nearest hostile sector is capturable
+2. All sector markers start grey (alpha 0.2) and return to normal color when capturable
+3. FOBs after the first one must be within 1500m of a friendly sector
+4. Players attempting invalid captures receive notifications and sector resets when they leave
+5. Use existing notification system
+6. Maintain compatibility with all mission systems
+7. Do not save unit persistence when players leave an uncapturable sector
+
+## IMPLEMENTATION COMPONENTS
+
+### 1. CORE FUNCTIONS
+
+#### A. Capturable Sector Detection
+```sqf
+/*
+    Function: NZF_fnc_updateCapturableSectors
+    
+    Description:
+        Updates the list of sectors that can be captured based on proximity to friendly sectors
+    
+    Parameters:
+        None
+    
+    Returns:
+        Array of capturable sector objects
+    
+    Author: [NZF] JD Wang
+    Date: 2023-04-25
+*/
+```
+- Execute on sector status change (capture/loss)
+- Iterate through all friendly sectors
+- For each friendly sector, find the nearest enemy sector
+- Add these sectors to a capturable sectors array
+- Update sector markers based on this list
+- Remove validated sectors from NZF_invalid_capture_sectors array
+
+#### B. Sector Capture Validation
+```sqf
+/*
+    Function: NZF_fnc_validateSectorCapture
+    
+    Description:
+        Checks if a sector can be captured based on its proximity to friendly sectors
+    
+    Parameters:
+        _sector - Sector object to validate
+    
+    Returns:
+        Boolean - True if sector can be captured, false otherwise
+    
+    Author: [NZF] JD Wang
+    Date: 2023-04-25
+*/
+```
+- Check if sector is in the capturable sectors array
+- Return true/false for validation
+
+#### C. FOB Placement Validation
+```sqf
+/*
+    Function: NZF_fnc_validateFOBPlacement
+    
+    Description:
+        Checks if a FOB can be placed at the given position based on proximity to friendly sectors
+    
+    Parameters:
+        _position - Position array [x,y,z]
+    
+    Returns:
+        Boolean - True if FOB can be placed, false otherwise
+    
+    Author: [NZF] JD Wang
+    Date: 2023-04-25
+*/
+```
+- Skip validation for first FOB
+- Check if position is within 1500m of any friendly sector
+- Return true/false for validation
+
+#### D. Sector Reset Function
+```sqf
+/*
+    Function: NZF_fnc_resetInvalidSector
+    
+    Description:
+        Resets a sector to its original state after an invalid capture attempt
+    
+    Parameters:
+        _sector - Sector to reset
+    
+    Returns:
+        None
+    
+    Author: [NZF] JD Wang
+    Date: 2023-04-25
+*/
+```
+- Clear all player-spawned units
+- Reset sector activation state
+- Restore original sector composition
+- Ensure no unit persistence data is saved for the sector
+- Flag sector to prevent normal persistence saving mechanisms
+
+### 2. INTEGRATION POINTS
+
+#### A. Sector Marker Management
+- Initialize all sector markers as grey with 0.2 alpha at mission start
+- Update marker colors when capturable status changes
+- Use existing marker system
+
+#### B. Sector Capture Logic Modification
+- Hook into existing sector capture code
+- Add validation check before allowing sector to flip
+- Display notification for invalid capture attempts
+- Use existing player presence check to determine when to reset sector
+- Add sector to `NZF_invalid_capture_sectors` array on mission start, remove when they become valid for capture
+
+#### C. FOB Building Modification
+- Hook into existing FOB building code
+- Add validation check before FOB building is allowed
+- Display notification for invalid FOB placement
+
+#### D. Player Notification
+- Use existing notification system
+- Create clear messages explaining capture restrictions
+- Provide feedback when players attempt invalid actions
+
+## TECHNICAL IMPLEMENTATION STEPS
+
+1. Create new global variables:
+   - `NZF_capturable_sectors` - Array of currently capturable sectors
+   - `NZF_first_fob_placed` - Boolean flag for first FOB check
+   - `NZF_invalid_capture_sectors` - Initialize with all sectors, remove when they become valid for capture
+
+2. Modify sector initialization in the mission:
+   - Set all markers to grey/0.2 alpha
+   - Call `NZF_fnc_updateCapturableSectors` after blufor sectors are initialized
+
+3. Hook into sector capture code:
+   - Add check using `NZF_fnc_validateSectorCapture`
+   - Block capture process if validation fails
+   - Use existing player presence check for determining when to reset sector
+   - Initialize `NZF_invalid_capture_sectors` with all sectors, remove when they become valid
+
+4. Hook into FOB building code:
+   - Add check using `NZF_fnc_validateFOBPlacement`
+   - Block FOB construction if validation fails
+   - Update `NZF_first_fob_placed` when first FOB is built
+
+5. Create event handlers:
+   - Update capturable sectors on sector status change
+   - Reset sector when all players leave invalid sector (using existing player presence checks)
+
+6. Modify unit persistence system:
+   - Skip persistence saving for sectors in `NZF_invalid_capture_sectors` array
+
+## AFFECTED FILES
+
+1. `scripts/server/sector/init_sectors.sqf` - Initial marker setup
+2. `scripts/server/sector/manage_one_sector.sqf` - Sector capture logic
+3. `scripts/server/remotecall/build_fob_remote_call.sqf` - FOB placement logic
+4. Any additional sector management scripts
+
+## POTENTIAL CHALLENGES
+
+1. Map geography creating unusual capture patterns
+2. Performance impact of frequent sector proximity calculations
+3. Edge cases with water/island sectors
+4. Compatibility with existing sector scripts
+
+## FUTURE ENHANCEMENTS (NOT IN SCOPE)
+
+1. Special missions to unlock distant sectors
+2. Advanced frontline visualization on map
+3. Different rules for different sector types
+4. Dynamic distance thresholds based on progression 

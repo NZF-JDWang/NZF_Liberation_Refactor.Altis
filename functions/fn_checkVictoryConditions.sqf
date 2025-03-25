@@ -135,7 +135,7 @@
                 [format ["Hostile reinforcements called: %1", stats_reinforcements_called], "MISSION END"] call KPLIB_fnc_log;
                 [format ["Total combat readiness raised: %1", round stats_readiness_earned], "MISSION END"] call KPLIB_fnc_log;
                 [format ["IEDs detonated: %1", stats_ieds_detonated], "MISSION END"] call KPLIB_fnc_log;
-                [format ["Number of Potato 01 losses: %1", stats_spartan_respawns], "MISSION END"] call KPLIB_fnc_log;
+                [format ["Number of SPARTAN 6 losses: %1", stats_spartan_respawns], "MISSION END"] call KPLIB_fnc_log;
                 [format ["Rabbits killed: %1", _rabbits], "MISSION END"] call KPLIB_fnc_log;
                 ["------------------------------------", "MISSION END"] call KPLIB_fnc_log;
 
