@@ -114,11 +114,11 @@ if (_infOnly) then {
     _target_size = 12 max (_target_size * 4);
     
     // Create infantry groups with up to 8 units per squad
-    private _grp = createGroup [GRLIB_side_enemy, true];
+    private _grp = [GRLIB_side_enemy] call KPLIB_fnc_createGroupOnHC;
     for "_i" from 0 to (_target_size - 1) do {
         if (_i > 0 && {(_i % 8) isEqualTo 0}) then {
             _bg_groups pushBack _grp;
-            _grp = createGroup [GRLIB_side_enemy, true];
+            _grp = [GRLIB_side_enemy] call KPLIB_fnc_createGroupOnHC;
         };
         [selectRandom _infClasses, markerPos _spawn_marker, _grp] call KPLIB_fnc_createManagedUnit;
     };
@@ -146,7 +146,7 @@ if (_infOnly) then {
         params ["_vehicleTypes", "_index"];
         private _vehicleType = _vehicleTypes select _index;
         
-        private _nextgrp = createGroup [GRLIB_side_enemy, true];
+        private _nextgrp = [GRLIB_side_enemy] call KPLIB_fnc_createGroupOnHC;
         private _vehicle = [markerpos _spawn_marker, _vehicleType] call KPLIB_fnc_spawnVehicle;
         
         (crew _vehicle) joinSilent _nextgrp;
@@ -177,8 +177,8 @@ if (_infOnly) then {
             combat_readiness = (combat_readiness - (round ((count _bg_groups) + (random (count _bg_groups))))) max 0;
             stats_hostile_battlegroups = stats_hostile_battlegroups + 1;
             
-            // Start transferring groups to HC non-blockingly
-            [_bg_groups] call KPLIB_fnc_transferGroupsToHC;
+            // No longer needed: groups are already created on HC
+            // [_bg_groups] call KPLIB_fnc_transferGroupsToHC;
         };
     };
     

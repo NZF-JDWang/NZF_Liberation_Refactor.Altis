@@ -11,6 +11,22 @@ if (!isNil "GRLIB_all_fobs") then {
         // Add new FOB to array if not already present
         GRLIB_all_fobs pushBack _fob;
         diag_log format ["Remote Call FOB: Added FOB at position %1", _fob];
+        
+        // Force sector marker refresh when a FOB is placed
+        // When the first FOB is placed, request capturable sectors from server
+        if (count GRLIB_all_fobs == 1) then {
+            // Wait a moment for server to update NZF_capturable_sectors
+            sleep 1;
+            
+            // Force markers to update
+            {
+                if (!(_x in blufor_sectors) && {[_x] call KPLIB_fnc_validateSectorCapture}) then {
+                    _x setMarkerColorLocal GRLIB_color_enemy;
+                    _x setMarkerAlphaLocal 1;
+                    diag_log format ["[Client] Setting marker as capturable: %1", _x];
+                }
+            } forEach sectors_allSectors;
+        };
     };
     
     if (_status == 2 && (_fob in GRLIB_all_fobs)) then {
@@ -52,3 +68,4 @@ if ( _status == 3 ) then {
     "opfor_capture_marker" setMarkerPosLocal markers_reset;
     sector_timer = 0;
 };
+

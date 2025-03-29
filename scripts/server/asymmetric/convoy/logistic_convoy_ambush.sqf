@@ -84,6 +84,7 @@ if (KP_liberation_asymmetric_debug > 0) then {[format ["Logistic convoy %1 ambus
 
 private _grp = [getPos _roadObj] call KPLIB_fnc_spawnGuerillaGroup;
 
+// Use vanilla waypoints for guerrilla ambush
 private _waypoint = _grp addWaypoint [getPos _roadObj, 150];
 _waypoint setWaypointType "SAD";
 _waypoint setWaypointCompletionRadius 10;
@@ -96,6 +97,7 @@ _waypoint setWaypointCompletionRadius 10;
 _waypoint = _grp addWaypoint [getPos _roadObj, 150];
 _waypoint setWaypointType "CYCLE";
 _waypoint setWaypointCompletionRadius 10;
+
 if (KP_liberation_asymmetric_debug > 0) then {[format ["Logistic convoy %1 ambush: guerillas spawning done", (_convoy select 0)], "ASYMMETRIC"] call KPLIB_fnc_log;};
 
 private _waitingTime = KP_liberation_convoy_ambush_duration;

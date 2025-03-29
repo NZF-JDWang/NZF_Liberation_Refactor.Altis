@@ -30,22 +30,37 @@ if (!isServer) then {
     };
 };
 
+// Create the marker in the original position
 private _myfpsmarker = createMarker [format ["fpsmarker%1", _sourcestr], [0, -500 - (500 * _position)]];
 _myfpsmarker setMarkerType "mil_start";
 _myfpsmarker setMarkerSize [0.7, 0.7];
 
-while {true} do {
+// Log initial creation
+diag_log format ["[FPS] Created FPS marker for %1", _sourcestr];
 
-    private _myfps = diag_fps;
-    private _localgroups = {local _x} count allGroups;
-    private _localunits = {local _x} count allUnits;
+// Update interval in seconds
+private _updateInterval = 15;
 
-    _myfpsmarker setMarkerColor "ColorGREEN";
-    if (_myfps < 30) then {_myfpsmarker setMarkerColor "ColorYELLOW";};
-    if (_myfps < 20) then {_myfpsmarker setMarkerColor "ColorORANGE";};
-    if (_myfps < 10) then {_myfpsmarker setMarkerColor GRLIB_color_enemy_bright;};
+// Use CBA PerFrameHandler instead of sleep for better performance
+[
+    {
+        params ["_args", "_handle"];
+        _args params ["_myfpsmarker", "_sourcestr"];
+        
+        private _myfps = diag_fps;
+        private _localgroups = {local _x} count allGroups;
+        private _localunits = {local _x} count allUnits;
 
-    _myfpsmarker setMarkerText format ["%1: %2 fps, %3 local groups, %4 local units", _sourcestr, (round (_myfps * 100.0)) / 100.0, _localgroups, _localunits];
+        _myfpsmarker setMarkerColor "ColorGREEN";
+        if (_myfps < 30) then {_myfpsmarker setMarkerColor "ColorYELLOW";};
+        if (_myfps < 20) then {_myfpsmarker setMarkerColor "ColorORANGE";};
+        if (_myfps < 10) then {_myfpsmarker setMarkerColor "ColorRED";};
 
-    sleep 15;
-};
+        _myfpsmarker setMarkerText format ["%1: %2 fps, %3 local groups, %4 local units", _sourcestr, (round (_myfps * 100.0)) / 100.0, _localgroups, _localunits];
+        
+        // Log the FPS update for comparison with server logs
+        diag_log format ["[FPS] %1: %2 fps, %3 local groups, %4 local units", _sourcestr, (round (_myfps * 100.0)) / 100.0, _localgroups, _localunits];
+    },
+    _updateInterval,
+    [_myfpsmarker, _sourcestr]
+] call CBA_fnc_addPerFrameHandler;

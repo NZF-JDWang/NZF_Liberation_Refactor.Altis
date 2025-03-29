@@ -75,7 +75,7 @@ private _fnc_spawnDefenders = {
                         };
                         // Patrol
                         case 2: {
-                            [_group, _position, _searchRadius, [], true, true] call lambs_wp_fnc_taskPatrol;
+                            [_group, getPos (leader _group), _searchRadius] call lambs_wp_fnc_taskPatrol;
                             ["Defender group using LAMBS taskPatrol at FOB near %1", _position, "ATTACK"] call KPLIB_fnc_log;
                         };
                         // Creeping patrol

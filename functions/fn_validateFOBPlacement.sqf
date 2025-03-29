@@ -1,31 +1,25 @@
 /*
-    Function: NZF_fnc_validateFOBPlacement
+    Function: KPLIB_fnc_validateFOBPlacement
     
     Description:
-        Checks if a FOB can be placed at the given position based on proximity to friendly sectors
+        Validates if a FOB can be placed at the given position
+        based on proximity to friendly sectors
     
     Parameters:
-        _position - Position array [x,y,z]
+        _position - Position array [x,y,z] for the FOB
     
     Returns:
         Boolean - True if FOB can be placed, false otherwise
     
     Author: [NZF] JD Wang
-    Date: 2023-04-25
+    Date: 2024-11-08
 */
 
 params ["_position"];
 
-// If this is the first FOB, allow placement anywhere
-if (isNil "NZF_first_fob_placed") then {
-    NZF_first_fob_placed = false;
-    publicVariable "NZF_first_fob_placed";
-};
-
-// If this is the first FOB or GRLIB_all_fobs is empty, allow placement
-if (!NZF_first_fob_placed || count GRLIB_all_fobs == 0) exitWith {
-    // Note: We don't set NZF_first_fob_placed here anymore
-    // This will be set in build_fob_remote_call.sqf after successful placement
+// First FOB can be placed anywhere
+if (count GRLIB_all_fobs == 0) exitWith {
+    diag_log "[KPLIB] First FOB placement - allowed anywhere";
     true
 };
 

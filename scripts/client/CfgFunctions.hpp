@@ -6,3 +6,10 @@ class client_tutorial {
     class handleTakePowTask             {};
     class tutorial                      {ext = ".fsm";};
 };
+
+class client_markers {
+    file = "scripts\client\markers";
+    
+    class updateMarkerAppearance        {};
+    class refreshClientMarkers          {};
+};

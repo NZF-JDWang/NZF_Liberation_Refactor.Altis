@@ -7,6 +7,10 @@ building_defence_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\
 prisonner_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\prisonner_ai.sqf";
 // troup_transport = compileFinal preprocessFileLineNumbers "scripts\server\ai\troup_transport.sqf"; // Replaced by KPLIB_fnc_troopTransport
 
+// Ensure sides are properly set as enemies (important for non-standard side configurations)
+GRLIB_side_friendly setFriend [GRLIB_side_enemy, 0];
+GRLIB_side_enemy setFriend [GRLIB_side_friendly, 0];
+
 // Battlegroup
 // spawn_air = compileFinal preprocessFileLineNumbers "scripts\server\battlegroup\spawn_air.sqf"; // Replaced by KPLIB_fnc_spawnAir
 // spawn_battlegroup = compileFinal preprocessFileLineNumbers "scripts\server\battlegroup\spawn_battlegroup.sqf"; // Replaced by KPLIB_fnc_spawnBattlegroup
@@ -17,6 +21,7 @@ prisonner_ai = compileFinal preprocessFileLineNumbers "scripts\server\ai\prisonn
 // Patrol
 manage_one_civilian_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_civilian_patrol.sqf";
 // manage_one_patrol = compileFinal preprocessFileLineNumbers "scripts\server\patrols\manage_one_patrol.sqf"; // Replaced by KPLIB_fnc_manageOnePatrol
+
 
 // Secondary objectives
 fob_hunting = compileFinal preprocessFileLineNumbers "scripts\server\secondary\fob_hunting.sqf";
@@ -29,12 +34,12 @@ ied_manager = compileFinal preprocessFileLineNumbers "scripts\server\sector\ied_
 manage_one_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\manage_one_sector.sqf";
 wait_to_spawn_sector = compileFinal preprocessFileLineNumbers "scripts\server\sector\wait_to_spawn_sector.sqf";
 
-// Compile frontline mechanics functions
-NZF_fnc_updateCapturableSectors = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_updateCapturableSectors.sqf";
-NZF_fnc_updateSectorMarkers = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_updateSectorMarkers.sqf";
-NZF_fnc_validateSectorCapture = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_validateSectorCapture.sqf";
-NZF_fnc_validateFOBPlacement = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_validateFOBPlacement.sqf";
-NZF_fnc_resetInvalidSector = compileFinal preprocessFileLineNumbers "scripts\server\frontline\fn_resetInvalidSector.sqf";
+// Compile replacement validation functions
+KPLIB_fnc_validateSectorCapture = compileFinal preprocessFileLineNumbers "functions\fn_validateSectorCapture.sqf";
+KPLIB_fnc_validateFOBPlacement = compileFinal preprocessFileLineNumbers "functions\fn_validateFOBPlacement.sqf";
+
+// Load admin commands
+[] call compileFinal preprocessFileLineNumbers "scripts\server\game\admin_commands.sqf";
 
 addMissionEventHandler ["BuildingChanged", {_this spawn kill_manager}];
 
@@ -119,37 +124,6 @@ switch (KP_liberation_preset_opfor) do {
     };
 };
 
-// Initialize frontline mechanic
-// Make sure NZF_first_fob_placed is initialized
-if (isNil "NZF_first_fob_placed") then {
-    NZF_first_fob_placed = false;
-    publicVariable "NZF_first_fob_placed";
-};
-
-// Initialize sector markers properly
-// First set all sectors as invalid
-NZF_capturable_sectors = [];
-publicVariable "NZF_capturable_sectors";
-NZF_invalid_capture_sectors = sectors_allSectors - blufor_sectors;
-publicVariable "NZF_invalid_capture_sectors";
-
-// Force update all sector markers to grey
-[[]] call NZF_fnc_updateSectorMarkers;
-
-// Wait a bit then update capturable sectors once more to ensure all markers are set correctly
-[
-    {
-        [] call NZF_fnc_updateCapturableSectors;
-    },
-    [],
-    2
-] call CBA_fnc_waitAndExecute;
-
-// Add event handler to update capturable sectors when a sector is captured
-["sector_captured", {[] call NZF_fnc_updateCapturableSectors}] call CBA_fnc_addEventHandler;
-// Add event handler to update capturable sectors when a sector is lost
-["sector_lost", {[] call NZF_fnc_updateCapturableSectors}] call CBA_fnc_addEventHandler;
-
 // Civil Reputation
 execVM "scripts\server\civrep\init_module.sqf";
 
@@ -172,3 +146,19 @@ execVM "scripts\server\offloading\group_diag.sqf";
 if (KP_liberation_restart > 0) then {
     execVM "scripts\server\game\server_restart.sqf";
 };
+
+// Initialize sector marker colors at mission start 
+// Start with all sectors grey with low alpha
+{
+    _x setMarkerColor "ColorGrey";
+    _x setMarkerAlpha 0.4;
+} forEach sectors_allSectors;
+
+// Set blufor sectors to their designated color
+{
+    _x setMarkerColor GRLIB_color_friendly;
+    _x setMarkerAlpha 1;
+} forEach blufor_sectors;
+
+// Call the update function to mark capturable sectors
+[] call KPLIB_fnc_updateSectorMarkers;

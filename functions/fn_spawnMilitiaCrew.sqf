@@ -1,20 +1,25 @@
 /*
-    File: fn_spawnMilitiaCrew.sqf
-    Author: KP Liberation Dev Team - https://github.com/KillahPotatoes
-    Date: 2019-12-03
-    Last Update: 2023-07-15
-    License: MIT License - http://www.opensource.org/licenses/MIT
-
+    Function: KPLIB_fnc_spawnMilitiaCrew
+    
     Description:
-        Spawns a crew for given vehicle.
-
-    Parameter(s):
+        Spawns a crew for given vehicle with optimized crew assignment.
+    
+    Parameters:
         _vehicle - Vehicle to spawn the crew for [OBJECT, defaults to objNull]
         _forceRiflemen - Force using custom unit type for crew [BOOL, defaults to false]
         _unitType - Custom unit type to use [STRING, defaults to opfor_rifleman]
-
+    
     Returns:
         Function reached the end [BOOL]
+    
+    Examples:
+        (begin example)
+        [_vehicle] call KPLIB_fnc_spawnMilitiaCrew;
+        [_vehicle, true, "O_Soldier_F"] call KPLIB_fnc_spawnMilitiaCrew;
+        (end)
+    
+    Author: [NZF] JD Wang
+    Date: 2024-11-16
 */
 
 params [
@@ -25,38 +30,11 @@ params [
 
 if (isNull _vehicle) exitWith {["Null object given"] call BIS_fnc_error; false};
 
-// Spawn units
-private _grp = createGroup [GRLIB_side_enemy, true];
-private _units = [];
+// Get the least loaded headless client for spawning
+private _hc = [] call KPLIB_fnc_getLessLoadedHC;
+private _owner = if (isNull _hc) then {2} else {owner _hc};
 
-// Determine unit type to use
-private _unitType = if (_forceRiflemen) then {
-    if (_specificType != "") then {
-        // Use the specific type provided
-        _specificType
-    } else {
-        // Use standard rifleman from opfor preset
-        opfor_rifleman
-    };
-} else {
-    // Use random militia unit
-    selectRandom militia_squad
-};
-
-for "_i" from 1 to 3 do {
-    _units pushBack ([_unitType, getPos _vehicle, _grp] call KPLIB_fnc_createManagedUnit);
-};
-
-// Assign to vehicle
-(_units select 0) moveInDriver _vehicle;
-(_units select 1) moveInGunner _vehicle;
-(_units select 2) moveInCommander _vehicle;
-
-// Remove possible leftovers
-{
-    if (isNull objectParent _x) then {
-        deleteVehicle _x;
-    };
-} forEach _units;
+// Remote execution of crew creation and assignment
+[_vehicle, _forceRiflemen, _specificType] remoteExecCall ["KPLIB_fnc_spawnMilitiaCrewRemote", _owner];
 
 true

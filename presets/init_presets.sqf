@@ -1,4 +1,3 @@
-
 KPLIB_initPresets = false;
 
 private _start = diag_ticktime;

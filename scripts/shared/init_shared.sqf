@@ -27,3 +27,6 @@ civinfo_delivered = compileFinal preprocessFileLineNumbers "scripts\server\civin
 asymm_notifications = compileFinal preprocessFileLineNumbers "scripts\client\asymmetric\asymm_notifications.sqf";
 
 execVM "scripts\shared\diagnostics.sqf";
+
+// Client-side marker functions
+NZF_fnc_refreshClientMarkers = compileFinal preprocessFileLineNumbers "scripts\client\markers\fn_refreshClientMarkers.sqf";

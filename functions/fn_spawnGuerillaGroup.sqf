@@ -77,4 +77,70 @@ for "_i" from 1 to _amount do {
     };
 };
 
+// Make units follow the leader
+{_x doFollow (leader _grp)} forEach (units _grp);
+
+// Apply LAMBS waypoints if available
+if (isClass (configFile >> "CfgPatches" >> "lambs_wp")) then {
+    [_grp] call lambs_wp_fnc_taskReset;
+    
+    // Use a search radius based on tier
+    private _searchRadius = 150 + (50 * _tier);
+    
+    // Determine AI behavior based on weighted choice
+    private _behaviorChoice = selectRandomWeighted [
+        "hunt", 0.4,    // 40% chance for hunt - aggressive behavior
+        "patrol", 0.3,  // 30% chance for patrol
+        "camp", 0.2,    // 20% chance for camp - ambush-like behavior
+        "rush", 0.1     // 10% chance for rush - very aggressive
+    ];
+    
+    switch (_behaviorChoice) do {
+        case "hunt": {
+            // Hunt behavior - actively search for enemies
+            [_grp, _pos, _searchRadius] call lambs_wp_fnc_taskHunt;
+            [format ["Guerilla group using LAMBS taskHunt at %1 with radius %2", _pos, _searchRadius], "INFO"] call KPLIB_fnc_log;
+        };
+        case "patrol": {
+            // Patrol behavior
+            [_grp, getPos (leader _grp), _searchRadius] call lambs_wp_fnc_taskPatrol;
+            [format ["Guerilla group using LAMBS taskPatrol at %1 with radius %2", _pos, _searchRadius], "INFO"] call KPLIB_fnc_log;
+        };
+        case "camp": {
+            // Camp behavior - set up ambush
+            [_grp, _pos, [], 50, true, true, true, true, true] call lambs_wp_fnc_taskCamp;
+            [format ["Guerilla group using LAMBS taskCamp at %1", _pos], "INFO"] call KPLIB_fnc_log;
+        };
+        case "rush": {
+            // Rush behavior - very aggressive
+            [_grp, _pos, _searchRadius] call lambs_wp_fnc_taskRush;
+            [format ["Guerilla group using LAMBS taskRush at %1 with radius %2", _pos, _searchRadius], "INFO"] call KPLIB_fnc_log;
+        };
+    };
+    
+    // Add a small delay before transferring to headless client
+    // This ensures the waypoints are fully processed by the server
+    [
+        {
+            params ["_group"];
+            // Additional check to ensure units are actively following waypoints
+            {
+                _x doFollow (leader _group);
+                _x setUnitPos "AUTO";
+            } forEach (units _group);
+            
+            // Only transfer to HC if the group still exists
+            if (!isNull _group) then {
+                // Transfer to headless client after waypoints are established
+                [_group] call KPLIB_fnc_transferGroupToHC;
+            };
+        },
+        [_grp],
+        1.0  // 1 second delay before HC transfer
+    ] call CBA_fnc_waitAndExecute;
+} else {
+    // If no LAMBS, transfer immediately
+    [_grp] call KPLIB_fnc_transferGroupToHC;
+};
+
 _grp

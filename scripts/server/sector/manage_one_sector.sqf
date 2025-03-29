@@ -29,6 +29,11 @@ if (isNil "KPLIB_activated_sectors") then {
     KPLIB_activated_sectors = [];
 };
 
+// Initialize tracking for sectors in transition (loading/saving) to prevent race conditions
+if (isNil "KPLIB_sectors_in_transition") then {
+    KPLIB_sectors_in_transition = [];
+};
+
 // Wait for combat_readiness variable to be defined before proceeding
 [{!isNil "combat_readiness"}, {
     params ["_sector"];
@@ -284,19 +289,38 @@ if (isNil "KPLIB_activated_sectors") then {
                 if (_hasDataInMap) then {
                     diag_log format ["[KPLIB] Sector %1 - Loading persistent units from data", _sector];
                     
-                    // Spawn the saved units
-                    private _persistentUnits = [_sector, _sectorpos] call KPLIB_fnc_spawnPersistentUnits;
+                    // Mark sector as in transition
+                    KPLIB_sectors_in_transition pushBack _sector;
+                    
+                    // Immediately mark the data as used to prevent duplicate spawning
+                    // Make a local copy first
+                    private _localSectorData = KPLIB_persistent_sectors get _sector;
+                    
+                    // Delete from the persistent map
+                    KPLIB_persistent_sectors deleteAt _sector;
+                    publicVariable "KPLIB_persistent_sectors";
+                    
+                    // Spawn the saved units using the local copy
+                    private _persistentUnits = [_sector, _sectorpos, _localSectorData] call KPLIB_fnc_spawnPersistentUnits;
                     
                     if (count _persistentUnits > 0) then {
                         _hasPersistentUnits = true;
                         _managed_units = _managed_units + _persistentUnits;
                         diag_log format ["[KPLIB] Sector %1 - Restored %2 persistent units", _sector, count _persistentUnits];
+                        
+                        // Units need brief time to initialize - use CBA instead of sleep
+                        [{
+                            diag_log "[KPLIB] Persistent units initialization complete";
+                        }, [], 0.5] call CBA_fnc_waitAndExecute;
                     } else {
                         diag_log format ["[KPLIB] Sector %1 - No units were restored from persistence data", _sector];
                     };
                     
-                    // Mark sector as no longer having persistence data - moved to spawnPersistentUnits
-                    // This is already done in the spawnPersistentUnits function
+                    // Remove from transition list after delay
+                    [{
+                        params ["_sector"];
+                        KPLIB_sectors_in_transition = KPLIB_sectors_in_transition - [_sector];
+                    }, [_sector], 5] call CBA_fnc_waitAndExecute;
                 } else {
                     diag_log format ["[KPLIB] Sector %1 - Marked as saved but no data found in KPLIB_persistent_sectors map", _sector];
                     missionNamespace setVariable [_sectorSavedVar, false, true];
@@ -318,12 +342,132 @@ if (isNil "KPLIB_activated_sectors") then {
                         
                         if (_index >= count _vehicles) exitWith {_managed_units};
                         
+                        // Use optimized spawn vehicle function which already implements the [0,0,0] creation method
                         private _vehicle = [_sectorpos, _vehicles select _index] call KPLIB_fnc_spawnVehicle;
-                        [group ((crew _vehicle) select 0), _sectorpos] call add_defense_waypoints;
+                        
+                        // Create crew
+                        private _crew = [];
+                        private _crewType = "";
+                        
+                        // Determine crew type based on vehicle class
+                        private _isArmored = _vehicle isKindOf "Tank" || _vehicle isKindOf "Wheeled_APC_F";
+                        
+                        // Use appropriate crew type based on vehicle type
+                        if (_isArmored) then {
+                            // For tanks and APCs, use dedicated crew
+                            _crewType = opfor_crewman;
+                            if (KP_liberation_debug) then {
+                                diag_log format ["[KPLIB] Using specialized crew (%1) for armored vehicle %2", _crewType, typeOf _vehicle];
+                            };
+                        } else {
+                            // For other vehicles, use regular infantry
+                            _crewType = opfor_rifleman;
+                            if (KP_liberation_debug) then {
+                                diag_log format ["[KPLIB] Using infantry crew (%1) for vehicle %2", _crewType, typeOf _vehicle];
+                            };
+                        };
+                        
+                        // Ensure crew type is a string
+                        if (!(_crewType isEqualType "")) then {
+                            diag_log format ["[KPLIB] ERROR: Invalid crew type %1 for vehicle %2, using fallback unit", _crewType, typeOf _vehicle];
+                            _crewType = "O_Soldier_F";
+                        };
+                        
+                        // Create crew manually
+                        private _grp = createGroup [GRLIB_side_enemy, true];
+                        private _driver = objNull;
+                        private _gunner = objNull;
+                        private _commander = objNull;
+                        
+                        // Create driver if needed
+                        if (_vehicle emptyPositions "driver" > 0) then {
+                            try {
+                                _driver = _grp createUnit [_crewType, _sectorpos, [], 0, "NONE"];
+                                _driver moveInDriver _vehicle;
+                                _crew pushBack _driver;
+                                if (KP_liberation_debug) then {
+                                    diag_log format ["[KPLIB] Created driver %1 for vehicle %2", _driver, _vehicle];
+                                };
+                            } catch {
+                                diag_log format ["[KPLIB] ERROR creating driver for vehicle %1: %2", _vehicle, _exception];
+                            };
+                        };
+                        
+                        // Create gunner if needed
+                        if (_vehicle emptyPositions "gunner" > 0) then {
+                            try {
+                                _gunner = _grp createUnit [_crewType, _sectorpos, [], 0, "NONE"];
+                                _gunner moveInGunner _vehicle;
+                                _crew pushBack _gunner;
+                                if (KP_liberation_debug) then {
+                                    diag_log format ["[KPLIB] Created gunner %1 for vehicle %2", _gunner, _vehicle];
+                                };
+                            } catch {
+                                diag_log format ["[KPLIB] ERROR creating gunner for vehicle %1: %2", _vehicle, _exception];
+                            };
+                        };
+                        
+                        // Create commander if needed
+                        if (_vehicle emptyPositions "commander" > 0) then {
+                            try {
+                                _commander = _grp createUnit [_crewType, _sectorpos, [], 0, "NONE"];
+                                _commander moveInCommander _vehicle;
+                                _crew pushBack _commander;
+                                if (KP_liberation_debug) then {
+                                    diag_log format ["[KPLIB] Created commander %1 for vehicle %2", _commander, _vehicle];
+                                };
+                            } catch {
+                                diag_log format ["[KPLIB] ERROR creating commander for vehicle %1: %2", _vehicle, _exception];
+                            };
+                        };
+                        
+                        // Add to cargo if needed
+                        if (count _crew == 0) then {
+                            _driver = _grp createUnit [_crewType, _sectorpos, [], 0, "NONE"];
+                            _driver moveInCargo _vehicle;
+                            _crew pushBack _driver;
+                        };
+                        
+                        // Log crew creation result
+                        if (KP_liberation_debug) then {
+                            diag_log format ["[KPLIB] Created %1 crew members for vehicle %2", count _crew, typeOf _vehicle];
+                        };
+                        
+                        if (count _crew > 0 && {!isNull group (_crew select 0)}) then {
+                            // Add a delay to ensure vehicle is fully initialized before applying waypoints
+                            [{
+                                params ["_vehGroup", "_sector", "_vehicle"];
+                                
+                                if (!isNull _vehGroup && {count units _vehGroup > 0}) then {
+                                    // Set group behavior
+                                    _vehGroup setBehaviour "AWARE";
+                                    _vehGroup setCombatMode "YELLOW";
+                                    _vehGroup setSpeedMode "NORMAL";
+                                    _vehGroup enableAttack true;
+                                    
+                                    // Make sure crew follows leader
+                                    {_x doFollow (leader _vehGroup)} forEach (units _vehGroup);
+                                    
+                                    // Apply AI with sector marker position - use specialized vehicle patrol function
+                                    [_vehGroup, markerPos _sector, GRLIB_sector_size * 0.75] call KPLIB_fnc_applyVehiclePatrol;
+                                    if (KP_liberation_debug) then {
+                                        diag_log format ["[KPLIB] Applied vehicle patrol for %1 in sector %2", typeOf _vehicle, _sector];
+                                    };
+                                } else {
+                                    if (KP_liberation_debug) then {
+                                        diag_log format ["[KPLIB] WARNING: Vehicle group %1 is null or empty, cannot apply AI", _vehGroup];
+                                    };
+                                };
+                            }, [group (_crew select 0), _sector, _vehicle], 3] call CBA_fnc_waitAndExecute;
+                        } else {
+                            if (KP_liberation_debug) then {
+                                diag_log format ["[KPLIB] WARNING: No crew created for vehicle %1, cannot apply AI", _vehicle];
+                            };
+                        };
                         
                         private _updatedUnits = +_managed_units;
                         _updatedUnits pushback _vehicle;
-                        {_updatedUnits pushback _x;} foreach (crew _vehicle);
+                        {_updatedUnits pushback _x;} foreach _crew;
                         
                         // Process next vehicle after delay
                         [_fnc_processVehicle, [_index + 1, _vehicles, _sectorpos, _updatedUnits], 0.25] call CBA_fnc_waitAndExecute;
@@ -364,25 +508,61 @@ if (isNil "KPLIB_activated_sectors") then {
                 // Spawn regular squads
                 if (count _squad1 > 0) then {
                     private _grp = [_sector, _squad1] call KPLIB_fnc_spawnRegularSquad;
-                    [_grp, _sectorpos] call add_defense_waypoints;
+                    
+                    // Validate group before adding waypoints
+                    if (!isNull _grp && {count units _grp > 0}) then {
+                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                    } else {
+                        if (KP_liberation_debug) then {
+                            diag_log format ["[KPLIB] Invalid group for squad1 in sector %1", _sector];
+                        };
+                    };
+                    
                     _managed_units = _managed_units + (units _grp);
                 };
                 
                 if (count _squad2 > 0) then {
                     private _grp = [_sector, _squad2] call KPLIB_fnc_spawnRegularSquad;
-                    [_grp, _sectorpos] call add_defense_waypoints;
+                    
+                    // Validate group before adding waypoints
+                    if (!isNull _grp && {count units _grp > 0}) then {
+                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                    } else {
+                        if (KP_liberation_debug) then {
+                            diag_log format ["[KPLIB] Invalid group for squad2 in sector %1", _sector];
+                        };
+                    };
+                    
                     _managed_units = _managed_units + (units _grp);
                 };
                 
                 if (count _squad3 > 0) then {
                     private _grp = [_sector, _squad3] call KPLIB_fnc_spawnRegularSquad;
-                    [_grp, _sectorpos] call add_defense_waypoints;
+                    
+                    // Validate group before adding waypoints
+                    if (!isNull _grp && {count units _grp > 0}) then {
+                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                    } else {
+                        if (KP_liberation_debug) then {
+                            diag_log format ["[KPLIB] Invalid group for squad3 in sector %1", _sector];
+                        };
+                    };
+                    
                     _managed_units = _managed_units + (units _grp);
                 };
                 
                 if (count _squad4 > 0) then {
                     private _grp = [_sector, _squad4] call KPLIB_fnc_spawnRegularSquad;
-                    [_grp, _sectorpos] call add_defense_waypoints;
+                    
+                    // Validate group before adding waypoints
+                    if (!isNull _grp && {count units _grp > 0}) then {
+                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                    } else {
+                        if (KP_liberation_debug) then {
+                            diag_log format ["[KPLIB] Invalid group for squad4 in sector %1", _sector];
+                        };
+                    };
+                    
                     _managed_units = _managed_units + (units _grp);
                 };
                 
@@ -444,8 +624,15 @@ if (isNil "KPLIB_activated_sectors") then {
         
         // Check for active capture conditions
         if (([_sectorpos, _local_capture_size] call KPLIB_fnc_getSectorOwnership == GRLIB_side_friendly) && (GRLIB_endgame == 0)) then {
-            // Validate if the sector is capturable based on frontline mechanic
-            if ([_sector] call NZF_fnc_validateSectorCapture) then {
+            // Log the capture attempt
+            diag_log format ["[KPLIB] Sector %1 - friendly control detected, validating capture", _sector];
+            
+            // Validate the sector capture attempt
+            private _valid = [_sector] call KPLIB_fnc_validateSectorCapture;
+            
+            diag_log format ["[KPLIB] Sector %1 - capture validation result: %2", _sector, _valid];
+            
+            if (_valid) then {
                 // Additional check for enemy presence
                 private _enemiesInSector = [_sectorpos, _local_capture_size, GRLIB_side_enemy] call KPLIB_fnc_getUnitsCount;
                 
@@ -453,6 +640,8 @@ if (isNil "KPLIB_activated_sectors") then {
                     diag_log format ["[KPLIB] Sector %1 - Enemies still present (%2) despite capture conditions being met - waiting for elimination", _sector, _enemiesInSector];
                 } else {
                     diag_log format ["[KPLIB] Sector %1 - conditions met for capture, calling liberation", _sector];
+                    
+                    // Use isServer check to avoid redundant calls
                     if (isServer) then {
                         [_sector] call sector_liberated_remote_call;
                     } else {
@@ -463,31 +652,15 @@ if (isNil "KPLIB_activated_sectors") then {
                     [_handle] call CBA_fnc_removePerFrameHandler;
                 }
             } else {
-                diag_log format ["[KPLIB] Sector %1 - invalid capture attempt (not a frontline sector)", _sector];
-                // Send notification to players
-                [6] remoteExec ["KPLIB_fnc_crGlobalMsg", 0];
+                diag_log format ["[KPLIB] Sector %1 - invalid capture attempt (too far from friendly territory)", _sector];
                 
-                // Reset the sector if all players leave
-                if (_sector in NZF_invalid_capture_sectors) then {
-                    // Check the sector on next tick to see if players left
-                    _args set [9, true]; // Set flag for invalid capture attempt
-                } else {
-                    NZF_invalid_capture_sectors pushBack _sector;
-                    publicVariable "NZF_invalid_capture_sectors";
-                    _args set [9, true]; // Set flag for invalid capture attempt
-                };
+                // Send notification to players
+                ["Sector capture failed: Too far from friendly territory"] remoteExec ["hint", 0];
             };
         };
         
         // Check for player/friendly presence
         private _friendlies_near = ([_sectorpos, GRLIB_sector_size, GRLIB_side_friendly] call KPLIB_fnc_getUnitsCount);
-        
-        // Check if this is an invalid capture attempt and players have left
-        if (_args param [9, false] && _friendlies_near == 0) then {
-            diag_log format ["[KPLIB] Sector %1 - invalid capture attempt and players left, resetting sector", _sector];
-            [_sector] call NZF_fnc_resetInvalidSector;
-            _args set [9, false]; // Reset the invalid capture flag
-        };
         
         // If no friendlies (players) are present, decrement tickets
         if (_friendlies_near == 0) then {
@@ -517,8 +690,25 @@ if (isNil "KPLIB_activated_sectors") then {
             active_sectors = active_sectors - [_sector]; 
             publicVariable "active_sectors";
             
-            // Save the units for persistence before cleanup
-            [_sector, _sectorpos, _managed_units] call KPLIB_fnc_saveSectorUnits;
+            // Check if we need to save persistent units
+            private _isAlreadyLoading = _sector in KPLIB_sectors_in_transition;
+            
+            if (_isAlreadyLoading) then {
+                // Skip saving if already loading - prevents race condition
+                diag_log format ["[KPLIB] Sector %1 - Already in transition, skipping persistence save", _sector];
+            } else {
+                // Mark as in transition
+                KPLIB_sectors_in_transition pushBack _sector;
+                
+                // Save the units for persistence before cleanup
+                [_sector, _sectorpos, _managed_units] call KPLIB_fnc_saveSectorUnits;
+                
+                // Remove from transition list after short delay
+                [{
+                    params ["_sector"];
+                    KPLIB_sectors_in_transition = KPLIB_sectors_in_transition - [_sector];
+                }, [_sector], 5] call CBA_fnc_waitAndExecute;
+            };
             
             // Ensure save completed before continuing
             [{

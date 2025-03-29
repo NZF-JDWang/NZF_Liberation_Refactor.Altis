@@ -2,12 +2,13 @@
     File: fn_spawnRegularSquad.sqf
     Author: KP Liberation Dev Team - https://github.com/KillahPotatoes
     Date: 2019-12-03
-    Last Update: 2020-05-06
+    Last Update: 2024-11-17
     License: MIT License - http://www.opensource.org/licenses/MIT
 
     Description:
         Spawns a regular enemy squad with given soldier classnames at given sector.
         Uses staggered spawning via CBA to reduce lag spikes.
+        Creates both the group and units directly on headless client for proper locality.
 
     Parameter(s):
         _sector     - Sector to spawn the squad at          [STRING, defaults to ""]
@@ -42,27 +43,70 @@ if (_spawnPos isEqualTo zeroPos) exitWith {
 
 // Calculate corrected amount based on opfor factor
 private _corrected_amount = round ((count _classnames) * ([] call KPLIB_fnc_getOpforFactor));
-private _grp = createGroup [GRLIB_side_enemy, true];
+
+// Create the group directly on the HC/server using the unified function
+private _grp = [GRLIB_side_enemy] call KPLIB_fnc_createGroupOnHC;
+
+// Exit if group creation failed
+if (isNull _grp) exitWith {
+    diag_log format ["[KPLIB] Failed to create group for sector %1", _sector];
+    grpNull
+};
+
+// Log what's happening
+diag_log format ["[KPLIB] Creating squad for sector %1 - Group: %2", _sector, _grp];
 
 // Recursive function to spawn units with staggered delay
 private _fnc_spawnNextUnit = {
     params ["_args", "_handle"];
-    _args params ["_classnames", "_spawnPos", "_grp", "_currentIndex", "_maxIndex"];
+    _args params ["_classnames", "_spawnPos", "_grp", "_currentIndex", "_maxIndex", "_sector", "_sectorPos"];
     
     // Exit if all units spawned or group no longer exists
     if (_currentIndex >= _maxIndex || isNull _grp) exitWith {
         [_handle] call CBA_fnc_removePerFrameHandler;
         
-        // Transfer to headless client after all units are spawned
-        if (!isNull _grp) then {
-            [_grp] call KPLIB_fnc_transferGroupToHC;
+        // Only proceed if group exists and has units
+        if (!isNull _grp && {count units _grp > 0}) then {
+            // First ensure all units are set to follow their leader
+            // This helps prevent the formation standing issue
+            {
+                _x doFollow (leader _grp);
+                _x setUnitPos "AUTO";
+            } forEach (units _grp);
+            
+            // Wait a longer time to ensure all units are properly initialized
+            // This delay is important to avoid race conditions with LAMBS waypoints
+            [{
+                params ["_group", "_sector", "_sectorPos"];
+                
+                if (!isNull _group && {count units _group > 0}) then {
+                    // Get the group owner ID for proper locality handling
+                    private _groupOwner = groupOwner _group;
+                    private _isLocal = _groupOwner == clientOwner;
+                    
+                    // Log before applying AI
+                    diag_log format ["[KPLIB] Applying AI behavior to squad in sector %1 with %2 units - Local: %3, Owner: %4", 
+                                     _sector, count units _group, _isLocal, _groupOwner];
+                    
+                    // Apply appropriate AI behavior using our unified function
+                    // This function will handle the remote execution if needed
+                    [_group, _sectorPos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                    
+                    // Basic group state commands will work across network boundary
+                    _group setBehaviour "AWARE";
+                    _group setCombatMode "YELLOW";
+                    
+                    // Log after applying AI
+                    diag_log format ["[KPLIB] AI behavior applied to squad in sector %1", _sector];
+                };
+            }, [_grp, _sector, _sectorPos], 3.0] call CBA_fnc_waitAndExecute;
         };
     };
     
     // Get next classname to spawn
     private _classname = _classnames select _currentIndex;
     
-    // Spawn the unit
+    // Spawn the unit directly on the target machine
     [_classname, _spawnPos, _grp] call KPLIB_fnc_createManagedUnit;
     
     // Update index for next unit
@@ -73,7 +117,7 @@ private _fnc_spawnNextUnit = {
 [
     _fnc_spawnNextUnit,
     0.05,
-    [_classnames, _spawnPos, _grp, 0, _corrected_amount]
+    [_classnames, _spawnPos, _grp, 0, _corrected_amount, _sector, _sectorPos]
 ] call CBA_fnc_addPerFrameHandler;
 
 _grp

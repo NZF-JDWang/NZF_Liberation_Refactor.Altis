@@ -19,16 +19,6 @@ class server_support {
     class createSuppModules             {};
 };
 
-class server_frontline {
-    file = "scripts\server\frontline";
-    
-    class updateCapturableSectors       {};
-    class validateSectorCapture         {};
-    class validateFOBPlacement          {};
-    class resetInvalidSector            {};
-    class updateSectorMarkers           {};
-};
-
 // Game functions
 class KPLIB_game {
     file = "functions";
@@ -39,8 +29,9 @@ class KPLIB_game {
     class spawnBattlegroupAI            {};
     class spawnAir                      {};
     class troopTransport                {};
-    class transferGroupsToHC            {};
     class readinessIncrease             {};
     class randomBattlegroups            {};
     class counterBattlegroup            {};
+    class validateSectorCapture         {};
+    class validateFOBPlacement          {};
 };

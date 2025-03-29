@@ -39,6 +39,9 @@ do_load_box = compileFinal preprocessFileLineNumbers "scripts\client\ammoboxes\d
 kp_fuel_consumption = compileFinal preprocessFileLineNumbers "scripts\client\misc\kp_fuel_consumption.sqf";
 kp_vehicle_permissions = compileFinal preprocessFileLineNumbers "scripts\client\misc\vehicle_permissions.sqf";
 
+// Add a direct marker update for when client joins to ensure proper marker display
+execVM "scripts\client\markers\init_sector_markers.sqf";
+
 execVM "scripts\client\actions\intel_manager.sqf";
 execVM "scripts\client\actions\recycle_manager.sqf";
 execVM "scripts\client\actions\unflip_manager.sqf";

@@ -25,12 +25,35 @@ while {true} do {
         count blufor_sectors != _sector_count
     };
 
-    {_x setMarkerColorLocal GRLIB_color_enemy;} forEach (sectors_allSectors - blufor_sectors);
-    {_x setMarkerColorLocal GRLIB_color_friendly;} forEach blufor_sectors;
+    // First set all non-blufor sectors to grey with low alpha
+    {
+        if !(_x in blufor_sectors) then {
+            _x setMarkerColorLocal "ColorGrey";
+            _x setMarkerAlphaLocal 0.4;
+        };
+    } forEach sectors_allSectors;
+    
+    // Then set blufor sectors to friendly color
+    {
+        _x setMarkerColorLocal GRLIB_color_friendly;
+        _x setMarkerAlphaLocal 1;
+    } forEach blufor_sectors;
+    
+    // If validateSectorCapture function is available, update capturable sectors
+    if (!isNil "KPLIB_fnc_validateSectorCapture") then {
+        {
+            if (!(_x in blufor_sectors) && {[_x] call KPLIB_fnc_validateSectorCapture}) then {
+                _x setMarkerColorLocal GRLIB_color_enemy;
+                _x setMarkerAlphaLocal 1;
+            };
+        } forEach sectors_allSectors;
+    };
 
+    // Update vehicle unlock markers
     {
         _x params ["_marker", "_base"];
         _marker setMarkerColorLocal ([GRLIB_color_enemy, GRLIB_color_friendly] select (_base in blufor_sectors));
     } forEach _vehicle_unlock_markers;
+    
     _sector_count = count blufor_sectors;
 };

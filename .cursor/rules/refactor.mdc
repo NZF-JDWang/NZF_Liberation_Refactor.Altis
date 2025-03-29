@@ -1,6 +1,11 @@
 ---
 description: 
 globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
 alwaysApply: true
 ---
 
@@ -18,6 +23,9 @@ alwaysApply: true
 - Replace vanilla Arma 3 functionality with CBA/ACE equivalents where appropriate
 - Use CBA event system and scheduling functions instead of vanilla alternatives
 - Do not include fallback code for when CBA/ACE are not available
+- Always write code with locality in mind the system needs to work in multiplayer on a dedicated server and with headless clients 
+- All AI spawned are to be spawned directly onto the headless client when it is available, 
+- AI are not to be spawned on the server and transferred to the headclient as that causes waypoints to be lost
 
 ## Function Scope and Testing
 - Work on one function at a time to ensure proper testing between changes

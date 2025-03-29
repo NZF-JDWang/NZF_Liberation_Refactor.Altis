@@ -223,11 +223,33 @@ if (!isNil "_saveData") then {
         
         // Ensure KPLIB_persistent_sectors is always a HashMap
         private _persistentSectors = _saveData param [22, createHashMap];
-        if (_persistentSectors isEqualType createHashMap) then {
+        if (!isNil "_persistentSectors" && {_persistentSectors isEqualType createHashMap}) then {
             KPLIB_persistent_sectors = _persistentSectors;
         } else {
-            diag_log format ["[KPLIB] ERROR: Saved KPLIB_persistent_sectors is not a HashMap but a %1 - Creating new HashMap", typeName _persistentSectors];
-            KPLIB_persistent_sectors = createHashMap;
+            // Migration code for older saves that used array format
+            if (!isNil "_persistentSectors" && {_persistentSectors isEqualType []}) then {
+                diag_log format ["[KPLIB] Migrating persistent_sectors from array format to HashMap - Array length: %1", count _persistentSectors];
+                KPLIB_persistent_sectors = createHashMap;
+                
+                // Convert array entries to HashMap entries if possible
+                {
+                    if (_x isEqualType [] && {count _x >= 2}) then {
+                        private _sectorName = _x select 0;
+                        private _sectorData = _x select 1;
+                        
+                        if (_sectorName isEqualType "" && {_sectorData isEqualType []}) then {
+                            KPLIB_persistent_sectors set [_sectorName, _sectorData];
+                            diag_log format ["[KPLIB] Migrated sector data for %1", _sectorName];
+                        };
+                    }
+                } forEach _persistentSectors;
+                
+                publicVariable "KPLIB_persistent_sectors";
+                diag_log format ["[KPLIB] Migration complete - HashMap now has %1 entries", count (keys KPLIB_persistent_sectors)];
+            } else {
+                diag_log format ["[KPLIB] ERROR: Saved KPLIB_persistent_sectors is not a HashMap but a %1 - Creating new HashMap", typeName _persistentSectors];
+                KPLIB_persistent_sectors = createHashMap;
+            };
         };
         
         KPLIB_activated_sectors                     = _saveData param [23, []];

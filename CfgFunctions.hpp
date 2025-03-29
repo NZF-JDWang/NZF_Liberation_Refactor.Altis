@@ -16,13 +16,14 @@ class KPLIB {
         class cleanOpforVehicle         {};
         class clearCargo                {};
         class crAddAceAction            {};
-        class crateFromStorage          {};
-        class crateToStorage            {};
-        class crawlAllItems             {};
         class createClearance           {};
         class createClearanceConfirm    {};
         class createCrate               {};
         class createManagedUnit         {};
+        class createManagedUnitRemote   {};
+        class crateFromStorage          {};
+        class crateToStorage            {};
+        class crawlAllItems             {};
         class crGetMulti                {};
         class crGlobalMsg               {};
         class doSave                    {};
@@ -71,7 +72,6 @@ class KPLIB {
         class manageOnePatrol           {};
         class managePatrols             {};
         class monitorSectors            {};
-        class patrolAI                  {};
         class potatoScan                {};
         class protectObject             {};
         class reinforcementsManager     {};
@@ -89,15 +89,20 @@ class KPLIB {
         class spawnBuildingSquad        {};
         class spawnCivilians            {};
         class spawnGroupOnHC            {};
+        class spawnGroupRemote          {};
         class spawnGuerillaGroup        {};
         class spawnMilitaryPostSquad    {};
         class spawnMilitiaCrew          {};
+        class spawnMilitiaCrewRemote    {};
         class spawnPatrolGroupOnHC      {};
+        class spawnPatrolGroupRemote    {};
         class spawnPersistentUnits      {};
         class spawnRegularSquad         {};
         class spawnVehicle              {};
         class swapInventory             {};
-        class transferGroupToHC         {};
+        class validateSectorCapture     {};
+        class validateFOBPlacement      {};
+        class updateSectorMarkers       {};
     };
     class functions_curator {
         file = "functions\curator";
@@ -112,6 +117,16 @@ class KPLIB {
 
         class overlayUpdateResources    {};
     };
+    
+    class KPLIB_AI {
+        file = "functions";
+        class applySquadAI {};
+        class applyVehiclePatrol {};
+        class createGroupOnHC {};
+        class patrolAI {};
+        class fixStandingGroups {};
+    };
+    
     #include "scripts\client\CfgFunctions.hpp"
     #include "scripts\server\CfgFunctions.hpp"
 };

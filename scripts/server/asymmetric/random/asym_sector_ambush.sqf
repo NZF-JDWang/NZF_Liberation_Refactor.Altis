@@ -46,6 +46,8 @@ while {(_sector in KP_liberation_asymmetric_sectors) && (!isNull _grp)} do {
         (units _grp) doFollow (leader _grp);
         _grp setBehaviour "COMBAT";
         _grp setCombatMode "RED";
+        
+        // Set up vanilla waypoints for ambush
         private _waypoint = _grp addWaypoint [markerpos _sector, 20];
         _waypoint setWaypointType "SAD";
         _waypoint setWaypointSpeed "FULL";

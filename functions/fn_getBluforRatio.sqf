@@ -2,7 +2,7 @@
     File: fn_getBluforRatio.sqf
     Author: KP Liberation Dev Team - https://github.com/KillahPotatoes
     Date: 2019-11-25
-    Last Update: 2019-12-05
+    Last Update: 2024-11-07
     License: MIT License - http://www.opensource.org/licenses/MIT
 
     Description:
@@ -19,7 +19,17 @@ params [
     ["_sector", "", [""]]
 ];
 
-if (_sector isEqualTo "") exitWith {["Empty string given"] call BIS_fnc_error; -1};
+// If sector is empty or doesn't exist, exit with an error and return a default value
+if (_sector isEqualTo "") exitWith {
+    ["Empty string given"] call BIS_fnc_error; 
+    0
+};
+
+// Check if the marker actually exists
+if (markerShape _sector == "") exitWith {
+    [format ["Invalid sector marker: %1", _sector]] call BIS_fnc_error;
+    0
+};
 
 private _range = [GRLIB_capture_size, GRLIB_capture_size * 1.4] select (_sector in sectors_bigtown);
 private _red = [(markerPos _sector), _range, GRLIB_side_enemy] call KPLIB_fnc_getUnitsCount;

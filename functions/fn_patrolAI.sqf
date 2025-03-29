@@ -44,7 +44,7 @@ if (!isNull _grp) then {
 };
 
 // Log patrol creation
-["Creating patrol with LAMBS: " + str _hasLAMBS + " | Vehicle Group: " + str _isVehicleGroup, "PATROLS"] call KPLIB_fnc_log;
+[format ["Creating patrol with LAMBS: %1 | Vehicle Group: %2", _hasLAMBS, _isVehicleGroup], "PATROLS"] call KPLIB_fnc_log;
 
 // Create a PFH to monitor the patrol and update waypoints
 private _pfh = [{
@@ -60,7 +60,7 @@ private _pfh = [{
     // Check if a sector is under attack and needs reinforcements
     if (reinforcements_sector_under_attack != "") then {
         // Log reinforcement
-        ["Patrol group " + str _grp + " responding to sector: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
+        [format ["Patrol group %1 responding to sector: %2", _grp, reinforcements_sector_under_attack], "PATROLS"] call KPLIB_fnc_log;
         
         // Clear all existing waypoints
         while {count (waypoints _grp) > 0} do {
@@ -81,8 +81,8 @@ private _pfh = [{
                 _grp setCombatMode "RED";
                 
                 // Use taskPatrol with tight radius to search the area without omniscience
-                [_grp, _attackPos, 200] call lambs_wp_fnc_taskPatrol;
-                ["Vehicle reinforcement using LAMBS taskPatrol at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
+                [_grp, getPos (leader _grp), 200] call lambs_wp_fnc_taskPatrol;
+                [format ["Vehicle reinforcement using LAMBS taskPatrol at: %1", reinforcements_sector_under_attack], "PATROLS"] call KPLIB_fnc_log;
             } else {
                 // Infantry reinforcement with LAMBS - tactical approach without Rush/Hunt
                 _grp setSpeedMode "FULL";
@@ -95,11 +95,11 @@ private _pfh = [{
                 if (count _nearBuildings > 3) then {
                     // Use taskAssault for dynamic building clearing if buildings present
                     [_grp, _attackPos, 250, true, true] call lambs_wp_fnc_taskAssault;
-                    ["Infantry reinforcement using LAMBS taskAssault at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
+                    [format ["Infantry reinforcement using LAMBS taskAssault at: %1", reinforcements_sector_under_attack], "PATROLS"] call KPLIB_fnc_log;
                 } else {
                     // Use taskPatrol with tight radius in open areas
-                    [_grp, _attackPos, 150] call lambs_wp_fnc_taskPatrol;
-                    ["Infantry reinforcement using LAMBS taskPatrol at: " + reinforcements_sector_under_attack, "PATROLS"] call KPLIB_fnc_log;
+                    [_grp, getPos (leader _grp), 150] call lambs_wp_fnc_taskPatrol;
+                    [format ["Infantry reinforcement using LAMBS taskPatrol at: %1", reinforcements_sector_under_attack], "PATROLS"] call KPLIB_fnc_log;
                 };
             }
         } else {
@@ -155,18 +155,18 @@ private _pfh = [{
             // Use LAMBS waypoints if available
             if (_hasLAMBS) then {
                 if (_isVehicleGroup) then {
-                    // Vehicle patrol with LAMBS
+                    // Vehicle groups should NEVER use LAMBS waypoints
                     private _patrolRadius = 800; // Larger radius for vehicles
                     
                     if (count _sectors_patrol > 0) then {
                         // Patrol between sectors if available
                         private _sectorPos = markerPos (selectRandom _sectors_patrol);
-                        [_grp, _sectorPos, _patrolRadius] call lambs_wp_fnc_taskPatrol;
-                        ["Vehicle patrol using LAMBS taskPatrol near sector", "PATROLS"] call KPLIB_fnc_log;
+                        [_grp, _sectorPos, _patrolRadius] call KPLIB_fnc_applyVehiclePatrol;
+                        [format ["Vehicle patrol using dedicated vehicle patrol function near sector"], "PATROLS"] call KPLIB_fnc_log;
                     } else {
                         // Patrol around current position if no sectors nearby
-                        [_grp, _patrol_startpos, _patrolRadius] call lambs_wp_fnc_taskPatrol;
-                        ["Vehicle patrol using LAMBS taskPatrol at current position", "PATROLS"] call KPLIB_fnc_log;
+                        [_grp, _patrol_startpos, _patrolRadius] call KPLIB_fnc_applyVehiclePatrol;
+                        [format ["Vehicle patrol using dedicated vehicle patrol function at current position"], "PATROLS"] call KPLIB_fnc_log;
                     };
                 } else {
                     // Infantry patrol with LAMBS - random strategy selection for variety
@@ -184,7 +184,7 @@ private _pfh = [{
                         case 1: {
                             // Standard patrol behavior
                             [_grp, _patrolPos, _patrolRadius] call lambs_wp_fnc_taskPatrol;
-                            ["Infantry patrol using LAMBS taskPatrol", "PATROLS"] call KPLIB_fnc_log;
+                            [format ["Infantry patrol using LAMBS taskPatrol"], "PATROLS"] call KPLIB_fnc_log;
                         };
                         case 2: {
                             // Garrison nearby buildings
@@ -194,7 +194,7 @@ private _pfh = [{
                                 ["Infantry patrol using LAMBS taskGarrison", "PATROLS"] call KPLIB_fnc_log;
                             } else {
                                 [_grp, _patrolPos, _patrolRadius] call lambs_wp_fnc_taskPatrol;
-                                ["Infantry patrol using LAMBS taskPatrol (no buildings)", "PATROLS"] call KPLIB_fnc_log;
+                                [format ["Infantry patrol using LAMBS taskPatrol (no buildings)"], "PATROLS"] call KPLIB_fnc_log;
                             };
                         };
                         case 3: {

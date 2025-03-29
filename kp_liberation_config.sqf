@@ -176,7 +176,7 @@ KP_liberation_preset_civilians = 0;
 14 = CSAT Green Hex arsenal preset
 15 = AAF arsenal preset
 16 = LDF arsenal preset */
-KP_liberation_arsenal = 13;
+KP_liberation_arsenal = 6;
 
 /* - Fuel consumption settings.
 Time in minutes till a full tank depletes whilst the vehicle is standing still with a running engine. */
@@ -1134,3 +1134,6 @@ KP_liberation_savegame_debug = 0;                       // Extra debug info in t
 KP_liberation_asymmetric_debug = 0;                     // Extra debug info for asymmetric threats
 KP_liberation_logistic_debug = 0;                       // 0: Disabled - 1: Transport and Resource Cargo - 2: Also Vehicle Cargo
 KP_liberation_sectorspawn_debug = 1;                    // Extra debug info for sector spawning
+
+GRLIB_side_friendly setFriend [GRLIB_side_enemy, 0];
+GRLIB_side_enemy setFriend [GRLIB_side_friendly, 0];

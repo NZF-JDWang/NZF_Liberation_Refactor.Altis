@@ -26,26 +26,77 @@ if ( _status == 3 ) then {
     sector_timer = 0;
 };
 
-// For markers that already have a designated status, update them directly
-{ _x setMarkerColorLocal GRLIB_color_enemy; } foreach (sectors_allSectors - blufor_sectors);
-{ _x setMarkerColorLocal GRLIB_color_friendly; } foreach blufor_sectors;
+// First set all non-blufor sectors to grey with low alpha
+{
+    if (!(_x in blufor_sectors)) then {
+        _x setMarkerColorLocal "ColorGrey";
+        _x setMarkerAlphaLocal 0.4;
+    };
+} forEach sectors_allSectors;
 
-// For capturable sectors, make sure they're not grey
-if (!isNil "NZF_capturable_sectors") then {
+// Then set blufor sectors to friendly color
+{
+    _x setMarkerColorLocal GRLIB_color_friendly;
+    _x setMarkerAlphaLocal 1;
+} forEach blufor_sectors;
+
+// If validateSectorCapture function is available, mark capturable sectors
+if (!isNil "KPLIB_fnc_validateSectorCapture") then {
     {
-        if (!(_x in blufor_sectors)) then {
+        if (!(_x in blufor_sectors) && {[_x] call KPLIB_fnc_validateSectorCapture}) then {
             _x setMarkerColorLocal GRLIB_color_enemy;
             _x setMarkerAlphaLocal 1;
         };
-    } forEach NZF_capturable_sectors;
+    } forEach sectors_allSectors;
 };
 
-// For invalid sectors, they should be grey and transparent
-if (!isNil "NZF_invalid_capture_sectors") then {
+if (_status == 0) then {
+    
+    if (isServer) then {
+        // Handle local game too, in case both host and client execute this
+        // Here the action happens on the server
+        [_sector] call remote_call_sector_remote_call;
+        
+        // Skip the remote execution that would happen below
+        _execute_script = false;
+    };
+    
+    blufor_sectors pushback _sector; publicVariable "blufor_sectors";
+
+    // Update markers
+    _sector setMarkerColor GRLIB_color_friendly;
+    _sector setMarkerAlpha 1;
+    
+    // Dynamically update markers for valid sectors
     {
-        if (!(_x in blufor_sectors) && !(_x in NZF_capturable_sectors)) then {
-            _x setMarkerColorLocal "ColorGrey";
-            _x setMarkerAlphaLocal 0.4;
+        if (!(_x in blufor_sectors) && {[_x] call KPLIB_fnc_validateSectorCapture}) then {
+            _x setMarkerColor GRLIB_color_enemy;
+            _x setMarkerAlpha 1;
+        } else {
+            if (!(_x in blufor_sectors)) then {
+                _x setMarkerColor "ColorGrey";
+                _x setMarkerAlpha 0.4;
+            };
         };
-    } forEach NZF_invalid_capture_sectors;
+    } forEach sectors_allSectors;
+    
+    // Show resource icons on factory sectors
+    if (_sector in sectors_factory) then {
+        ["lib_factory_captured", [markerText _sector]] call BIS_fnc_showNotification;
+        _sector_name = [_sector] call KPLIB_fnc_getLocationName;
+        
+        // Only display marker for player who captured sector
+        if (_sector in KP_liberation_production_markers) then {
+            private _marker = "";
+            {
+                if (_x select 0 == _sector) exitWith {_marker = _x select 1};
+            } forEach KP_liberation_production_markers;
+            
+            if (_marker != "") then {
+                _marker setMarkerTextLocal _sector_name;
+                _marker setMarkerColorLocal GRLIB_color_friendly;
+                _marker setMarkerAlphaLocal 1;
+            };
+        };
+    };
 };
