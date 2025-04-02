@@ -1,0 +1,53 @@
+## 10. Implementation Status (Updated 2024-04-XX)
+
+### 10.1 Completed
+
+1. ✅ Created `KPLIB_fnc_applyAIBehavior` implementing LAMBS AI task assignment based on roles.
+2. ✅ Modified `manage_one_sector.sqf` to use new squad spawning approach.
+3. ✅ Implemented squad spawning logic with HC awareness.
+4. ✅ Created multiple AI behavior patterns (patrol, garrison, defend, camp).
+5. ✅ Enhanced error handling for group reference nullification in LAMBS functions.
+6. ✅ Improved performance monitoring for LAMBS AI vs vanilla.
+7. ✅ Fine-tuned AI parameters based on gameplay observations.
+
+### 10.2 Known Issues
+
+1. **Group Reference Nullification:** LAMBS waypoint functions (e.g., `lambs_wp_fnc_taskReset`, `lambs_wp_fnc_taskGarrison`, etc.) appear to affect the group reference in SQF, causing:
+   * Group references passed to a LAMBS function sometimes returning as `<NULL-group>` in logs.
+   * Potential issues with follow-up actions on the group object.
+
+   **Solution:** Implemented a workaround by:
+   * Storing the group's network ID using `BIS_fnc_netId` before LAMBS function calls.
+   * Using `groupFromNetId` to reacquire a valid reference after LAMBS functions have executed.
+   * Using this recovered reference for group manipulation (unit follow orders, behavior settings).
+   * Log entries now properly display group ID and network ID instead of potential null references.
+
+2. **Sector Unit Spawning Warnings:** Occasional log messages about "Couldn't find spawn position for resource crate" when sectors initialize.
+   * May need investigation to ensure proper resource crate placement.
+   * Not directly related to AI behavior but part of the sector spawning system.
+
+3. **Non-network Object Warnings:** Multiple "Ref to nonnetwork object" warnings appearing in logs.
+   * These appear to be related to civilian units or other objects not properly networked.
+   * May need investigation for multiplayer stability.
+
+### 10.3 Next Steps
+
+1. **Performance Monitoring:** Implement tracking to assess performance impact of LAMBS AI vs vanilla.
+   * Monitor FPS impact.
+   * Track HC load distribution.
+   * Evaluate CPU usage patterns.
+
+2. **Fine-tuning AI Parameters:** Based on gameplay observation, adjust:
+   * Patrol radii.
+   * Garrison settings.
+   * Defensive postures.
+
+3. **Error Handling Improvements:**
+   * Add more robust error checking for missing markers.
+   * Handle potential network ID reference failures.
+   * Add time-based fallbacks for long-running operations.
+
+4. **Documentation Updates:**
+   * Add better inline documentation for the code.
+   * Create a user guide for mission makers.
+   * Document the role-assignment system for future development.
