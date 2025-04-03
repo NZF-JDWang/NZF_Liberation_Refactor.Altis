@@ -90,7 +90,7 @@ private _fnc_spawnNextUnit = {
                     
                     // Apply appropriate AI behavior using our unified function
                     // This function will handle the remote execution if needed
-                    [_group, _sectorPos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                    [_group, _groupOwner, _sector, "PATROL_DEFAULT"] call KPLIB_fnc_applyAIBehavior;
                     
                     // Basic group state commands will work across network boundary
                     _group setBehaviour "AWARE";

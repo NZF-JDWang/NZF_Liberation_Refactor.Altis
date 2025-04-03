@@ -25,7 +25,8 @@ if (isNil "sectors_allSectors" || isNil "blufor_sectors") exitWith {
 
 diag_log "[Client] Refreshing sector markers from server data";
 
-// Force refresh local marker colors for all sectors
+// Force refresh local marker colors for all sectors - COMMENTED OUT
+/*
 // First set all to grey with low alpha
 {
     _x setMarkerColorLocal "ColorGrey";
@@ -37,5 +38,6 @@ diag_log "[Client] Refreshing sector markers from server data";
     _x setMarkerColorLocal GRLIB_color_friendly;
     _x setMarkerAlphaLocal 1;
 } forEach blufor_sectors;
+*/
 
-diag_log "[Client] Local sector markers refreshed"; 
+diag_log "[Client] Local sector markers refreshed (Relying on server global updates)"; 

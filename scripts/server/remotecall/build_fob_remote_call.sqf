@@ -13,7 +13,7 @@ if !([_new_fob] call KPLIB_fnc_validateFOBPlacement) exitWith {
 };
 
 // Add to FOB list
-GRLIB_all_fobs pushback _new_fob;
+GRLIB_all_fobs pushBack _new_fob;
 publicVariable "GRLIB_all_fobs";
 diag_log format ["[KPLIB] FOB built at position %1, total FOBs: %2", _new_fob, count GRLIB_all_fobs];
 
@@ -26,8 +26,8 @@ if ( _create_fob_building ) then {
     [_fob_building] call KPLIB_fnc_addObjectInit;
 };
 
-// Update all sector markers using the centralized function
-[] call KPLIB_fnc_updateSectorMarkers;
+// Notify clients to update their markers
+[] remoteExecCall ["KPLIB_fnc_updateSectorMarkers", [0, -2] call CBA_fnc_players];
 
 // Schedule save and notification operations
 [{

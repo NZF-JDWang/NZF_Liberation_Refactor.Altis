@@ -2,6 +2,23 @@ waitUntil {!isNil "KPLIB_initServer"};
 
 params ["_newUnit", "_oldUnit"];
 
+build_confirmed = 0; // Initialize build status
+
+// Ensure player namespace variables are calculated at least once before adding actions
+if (!isNull player) then { // Safety check
+    // Call the full namespace update
+    [] call KPLIB_fnc_updatePlayerNamespace;
+    
+    // Additional direct check for startbase proximity to force the variable
+    if (!isNil "startbase") then {
+        private _isNearStart = (player distance2d startbase) < 200;
+        player setVariable ["KPLIB_isNearStart", _isNearStart];
+        diag_log format ["[KPLIB] [DIAGNOSTIC] onPlayerRespawn - Directly setting KPLIB_isNearStart: %1 (distance: %2)", _isNearStart, player distance2d startbase];
+    } else {
+        diag_log "[KPLIB] [DIAGNOSTIC] onPlayerRespawn - WARNING: startbase is nil during respawn!";
+    };
+};
+
 if (isNil "GRLIB_respawn_loadout") then {
     removeAllWeapons player;
     removeAllItems player;

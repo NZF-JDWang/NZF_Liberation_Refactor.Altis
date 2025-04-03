@@ -1,4 +1,3 @@
-
 KPLIB_init = false;
 
 // Version of the KP Liberation framework
@@ -62,3 +61,5 @@ if (isServer) then {
     KPLIB_initServer = true;
     publicVariable "KPLIB_initServer";
 };
+
+kp_liberation_clear_cargo = true;

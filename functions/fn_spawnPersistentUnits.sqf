@@ -78,7 +78,8 @@ diag_log format ["[KPLIB] Sector %1 persistence - Processing %2 unit data entrie
                     private _leaderPos = _data select 0;
                     private _leaderDir = _data select 1;
                     private _leaderPathDisabled = _data select 2;
-                    private _groupData = _data select 3;
+                    private _assignedRole = _data select 3; // Get saved role
+                    private _groupData = _data select 4; // Updated index
                     
                     // Create a group for all members
                     private _grp = createGroup [GRLIB_side_enemy, true];
@@ -120,7 +121,28 @@ diag_log format ["[KPLIB] Sector %1 persistence - Processing %2 unit data entrie
                     
                     // Set up defense waypoints for group if units were created
                     if (count units _grp > 0) then {
-                        [_grp, _sectorpos] call add_defense_waypoints;
+                        // [_grp, _sectorpos] call add_defense_waypoints; // Disable default defense WPs, role will be reapplied
+                        
+                        // Reapply the original AI behavior after a short delay
+                        private _groupNetID = netId _grp;
+                        private _groupOwner = groupOwner _grp;
+                        diag_log format ["[KPLIB] Sector %1 persistence - Scheduling AI behavior '%2' reapplication for Group %3 (NetID %4) on owner %5", 
+                            _sector, _assignedRole, groupId _grp, _groupNetID, _groupOwner];
+                            
+                        [{ 
+                            params ["_groupNetID", "_sector", "_assignedRole", "_ownerID"];
+                            private _group = groupFromNetId _groupNetID;
+                            if (!isNull _group) then {
+                                // Get the actual leader position from the newly spawned group
+                                private _leaderPos = getPos (leader _group);
+                                diag_log format ["[KPLIB] Sector %1 persistence - Reapplying AI behavior '%2' via remoteExecCall to NetID %3 on owner %4 using pos %5", 
+                                    _sector, _assignedRole, _groupNetID, _ownerID, _leaderPos];
+                                [_groupNetID, _sector, _assignedRole, _leaderPos] remoteExecCall ["KPLIB_fnc_applyAIBehavior", _ownerID];
+                            } else {
+                                diag_log format ["[KPLIB] Sector %1 persistence - Group with NetID %2 became null before AI reapplication.", _sector, _groupNetID];
+                            };
+                        }, [_groupNetID, _sector, _assignedRole, _groupOwner], 0.5] call CBA_fnc_waitAndExecute;
+
                     } else {
                         deleteGroup _grp;
                     };

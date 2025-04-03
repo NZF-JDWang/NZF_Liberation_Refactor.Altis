@@ -55,7 +55,10 @@ if (isServer) then {
     diag_log format ["[KPLIB] Sector %1 has been liberated", _liberated_sector];
 
     // Update all sector markers using the centralized function
-    [] call KPLIB_fnc_updateSectorMarkers;
+    {KPLIB_fsm_sectorMonitor setFSMVariable ["_availableSectors", sectors_available_markers, true]} remoteExec ["call", KPLIB_fsm_sectorMonitor getVariable "owner"];
+
+    // Notify clients to update their markers
+    [] remoteExecCall ["KPLIB_fnc_updateSectorMarkers", [0, -2] call CBA_fnc_players];
 
     // Check victory conditions in unscheduled space
     [] call check_victory_conditions;

@@ -63,7 +63,7 @@ if (!KP_liberation_ace) then {execVM "scripts\client\misc\resupply_manager.sqf";
 execVM "scripts\client\misc\secondary_jip.sqf";
 execVM "scripts\client\misc\synchronise_vars.sqf";
 execVM "scripts\client\misc\synchronise_eco.sqf";
-execVM "scripts\client\misc\playerNamespace.sqf";
+[] call KPLIB_fnc_initPlayerNamespace;
 execVM "scripts\client\spawn\redeploy_manager.sqf";
 execVM "scripts\client\ui\ui_manager.sqf";
 execVM "scripts\client\ui\tutorial_manager.sqf";
@@ -107,3 +107,6 @@ if (player isEqualTo ([] call KPLIB_fnc_getCommander)) then {
         };
     };
 };
+
+
+[] call KPLIB_fnc_updateSectorMarkers;

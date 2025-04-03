@@ -8,7 +8,7 @@ class EditorData
 	toggles=513;
 	class ItemIDProvider
 	{
-		nextID=6471;
+		nextID=6482;
 	};
 	class MarkerIDProvider
 	{
@@ -16,14 +16,14 @@ class EditorData
 	};
 	class LayerIndexProvider
 	{
-		nextID=1267;
+		nextID=1366;
 	};
 	class Camera
 	{
-		pos[]={14536.979,92.689735,5918.6592};
-		dir[]={0.075243987,-0.76695544,-0.63727367};
-		up[]={0.089931041,0.64170033,-0.76166463};
-		aside[]={-0.9931016,3.7252903e-09,-0.11725719};
+		pos[]={10595.593,261.9584,12330.583};
+		dir[]={0.20994759,-0.96619344,-0.14964055};
+		up[]={0.7867943,0.25781825,-0.56078917};
+		aside[]={-0.5804109,0,-0.81432378};
 	};
 };
 binarizationWanted=0;
@@ -261,7 +261,6 @@ class Mission
 				condition="true";
 				timeout[]={1.5,1.5,1.5};
 				interuptable=1;
-				effectMusic="LeadTrack01_F";
 			};
 			id=331;
 			type="EmptyDetector";
@@ -374,7 +373,7 @@ class Mission
 						class data
 						{
 							singleType="SCALAR";
-							value=0;
+							value=3;
 						};
 					};
 				};
@@ -2068,23 +2067,23 @@ class Mission
 		class Item30
 		{
 			dataType="Marker";
-			position[]={20258.004,0,8821.29};
-			name="factory";
-			text="Panagia Factory";
-			type="loc_Fuelstation";
-			colorName="ColorEAST";
-			id=1252;
-			atlOffset=-40.933956;
-		};
-		class Item31
-		{
-			dataType="Marker";
 			position[]={20521.229,0.0083084106,8868.1836};
 			name="capture_2";
 			text="Panagia";
 			type="n_art";
 			colorName="ColorEAST";
 			id=1253;
+			atlOffset=-34.161411;
+		};
+		class Item31
+		{
+			dataType="Marker";
+			position[]={20521.229,0.0083084106,8868.1836};
+			name="factory";
+			text="Panagia Factory";
+			type="loc_Fuelstation";
+			colorName="ColorEAST";
+			id=1252;
 			atlOffset=-34.161411;
 		};
 		class Item32

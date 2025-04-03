@@ -80,7 +80,7 @@ if (count _friendlyPositions == 0) exitWith {
 _isValidSector = _sector in _nearestSectors;
 
 // Log the result
-diag_log format ["[KPLIB] Sector %1 capture validation: %2", _sector, ["Invalid", "Valid - nearest to friendly position"] select _isValidSector];
+//diag_log format ["[KPLIB] Sector %1 capture validation: %2", _sector, ["Invalid", "Valid - nearest to friendly position"] select _isValidSector];
 
 // Return validation result
 _isValidSector 

@@ -72,7 +72,8 @@ execVM "scripts\server\game\playtime.sqf";
 [] call KPLIB_fnc_checkVictoryConditions;
 [] call KPLIB_fnc_saveManager;
 execVM "scripts\server\game\spawn_radio_towers.sqf";
-execVM "scripts\server\game\synchronise_vars.sqf";
+// execVM "scripts\server\game\synchronise_vars.sqf"; // Replaced with function call
+[] call KPLIB_fnc_synchroniseVars;
 execVM "scripts\server\game\synchronise_eco.sqf";
 execVM "scripts\server\game\zeus_synchro.sqf";
 execVM "scripts\server\offloading\show_fps.sqf";
@@ -160,5 +161,5 @@ if (KP_liberation_restart > 0) then {
     _x setMarkerAlpha 1;
 } forEach blufor_sectors;
 
-// Call the update function to mark capturable sectors
-[] call KPLIB_fnc_updateSectorMarkers;
+// Initial call removed - now handled by init_client.sqf for each joining player
+// [] call KPLIB_fnc_updateSectorMarkers;

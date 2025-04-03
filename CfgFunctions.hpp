@@ -57,13 +57,13 @@ class KPLIB {
         class getSaveData               {};
         class getSectorOwnership        {};
         class getSectorRange            {};
-        class getSquadComp              {};
         class getStoragePositions       {};
         class getUnitPositionId         {};
         class getUnitsCount             {};
         class getWeaponComponents       {};
         class handlePlacedZeusObject    {};
         class hasPermission             {};
+        class initPlayerNamespace       {};
         class initSectors               {};
         class isBigtownActive           {};
         class isClassUAV                {};
@@ -78,6 +78,7 @@ class KPLIB {
         class reinforcementsResetter    {};
         class saveSectorUnits           {};
         class secondsToTimer            {};
+        class selectSquadComposition    {};
         class sendParatroopers          {};
         class setDiscordState           {};
         class setFobMass                {};
@@ -98,10 +99,12 @@ class KPLIB {
         class spawnPatrolGroupRemote    {};
         class spawnPersistentUnits      {};
         class spawnRegularSquad         {};
+        class spawnSquadHC              {};
         class spawnVehicle              {};
         class swapInventory             {};
         class validateSectorCapture     {};
         class validateFOBPlacement      {};
+        class updatePlayerNamespace     {};
         class updateSectorMarkers       {};
     };
     class functions_curator {
@@ -120,7 +123,7 @@ class KPLIB {
     
     class KPLIB_AI {
         file = "functions";
-        class applySquadAI {};
+        class applyAIBehavior {};
         class applyVehiclePatrol {};
         class createGroupOnHC {};
         class patrolAI {};

@@ -101,7 +101,7 @@ if(isServer) then {
 
     // Technical Options
     ["--- Technical Options ---", "PARAM"] call KPLIB_fnc_log;
-    GET_PARAM_BOOL(GRLIB_permissions_param, "Permissions", 1);
+    GET_PARAM_BOOL(GRLIB_permissions_param, "Permissions", 0);
     GET_PARAM(GRLIB_cleanup_vehicles, "CleanupVehicles", 2);
     GET_PARAM_BOOL(GRLIB_introduction, "Introduction", 1);
     GET_PARAM_BOOL(GRLIB_deployment_cinematic, "DeploymentCinematic", 1);

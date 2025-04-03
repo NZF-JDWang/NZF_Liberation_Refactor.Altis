@@ -34,4 +34,5 @@ class KPLIB_game {
     class counterBattlegroup            {};
     class validateSectorCapture         {};
     class validateFOBPlacement          {};
+    class synchroniseVars               {};
 };

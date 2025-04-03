@@ -169,3 +169,80 @@ opfor_air = [
     "I_Plane_Fighter_03_dynamicLoadout_F",                              // L-159
     "I_Plane_Fighter_04_F"                                              // Gripen
 ];
+
+/*
+    Opfor squad compositions
+*/
+// Fireteams (4 men each)
+KPLIB_o_fireteamStd = [
+    opfor_team_leader,    // Team Leader
+    opfor_machinegunner,  // Machine Gunner
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman        // Rifleman
+];
+
+KPLIB_o_fireteamAssault = [
+    opfor_team_leader,    // Team Leader
+    opfor_grenadier,      // Grenadier
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman        // Rifleman
+];
+
+KPLIB_o_fireteamSupport = [
+    opfor_team_leader,    // Team Leader
+    opfor_heavygunner,    // Heavy Machine Gunner
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman        // Rifleman
+];
+
+// Standard Infantry Squad (8 men) - Two fireteams
+KPLIB_o_squadStd = [
+    opfor_squad_leader,   // Squad Leader
+    opfor_medic,          // Medic
+    opfor_machinegunner,  // Machine Gunner
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman,       // Rifleman
+    opfor_team_leader,    // Team Leader
+    opfor_rpg,           // RPG
+    opfor_rifleman        // Rifleman
+];
+
+// Assault Infantry Squad (8 men) - Two fireteams
+KPLIB_o_squadInf = [
+    opfor_squad_leader,   // Squad Leader
+    opfor_medic,          // Medic
+    opfor_grenadier,      // Grenadier
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman,       // Rifleman
+    opfor_team_leader,    // Team Leader
+    opfor_rpg,           // RPG
+    opfor_rifleman        // Rifleman
+];
+
+// Support Infantry Squad (8 men) - Two fireteams
+KPLIB_o_squadTank = [
+    opfor_squad_leader,   // Squad Leader
+    opfor_medic,          // Medic
+    opfor_heavygunner,    // Heavy Machine Gunner
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman,       // Rifleman
+    opfor_team_leader,    // Team Leader
+    opfor_rpg,           // RPG
+    opfor_rifleman        // Rifleman
+];
+
+// Heavy Infantry Squad (12 men) - Three fireteams
+KPLIB_o_squadAir = [
+    opfor_squad_leader,   // Squad Leader
+    opfor_medic,          // Medic
+    opfor_machinegunner,  // Machine Gunner
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman,       // Rifleman
+    opfor_team_leader,    // Team Leader 1
+    opfor_grenadier,      // Grenadier
+    opfor_rifleman,       // Rifleman
+    opfor_team_leader,    // Team Leader 2
+    opfor_heavygunner,    // Heavy Machine Gunner
+    opfor_rifleman,       // Rifleman
+    opfor_rifleman        // Rifleman
+];

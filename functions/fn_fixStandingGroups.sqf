@@ -122,8 +122,8 @@ diag_log format ["[KPLIB] Starting to fix standing groups - Total enemy groups: 
             diag_log format ["[KPLIB] Reapplied waypoints to stuck vehicle group %1", _grp];
         } else {
             // Apply normal AI for infantry
-            [_grp, markerPos _nearestSector, "patrol", GRLIB_sector_size * 0.75, _nearestSector] call KPLIB_fnc_applySquadAI;
-            diag_log format ["[KPLIB] Unstuck infantry group %1 using squad AI function", _grp];
+            [_grp, groupOwner _grp, _nearestSector, "PATROL_DEFAULT"] call KPLIB_fnc_applyAIBehavior;
+            diag_log format ["[KPLIB] Unstuck infantry group %1 using AI behavior function", _grp];
         };
         
         // Increment the fixed count
@@ -209,8 +209,8 @@ diag_log format ["[KPLIB] Starting to fix standing groups - Total enemy groups: 
                 diag_log format ["[KPLIB] Reapplied waypoints to stuck vehicle group %1", _grp];
             } else {
                 // Apply normal AI for infantry
-                [_grp, markerPos _nearestSector, "patrol", GRLIB_sector_size * 0.75, _nearestSector] call KPLIB_fnc_applySquadAI;
-                diag_log format ["[KPLIB] Unstuck infantry group %1 using squad AI function", _grp];
+                [_grp, groupOwner _grp, _nearestSector, "PATROL_DEFAULT"] call KPLIB_fnc_applyAIBehavior;
+                diag_log format ["[KPLIB] Unstuck infantry group %1 using AI behavior function", _grp];
             };
             
             // Increment the fixed count

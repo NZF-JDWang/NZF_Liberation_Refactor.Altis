@@ -77,163 +77,169 @@ if (isNil "KPLIB_sectors_in_transition") then {
         // Check for sector activation conditions
         if ((!(_sector in blufor_sectors)) && (([markerPos _sector, [_opforcount] call KPLIB_fnc_getSectorRange, GRLIB_side_friendly] call KPLIB_fnc_getUnitsCount) > 0)) then {
             private _fnc_configureSector = {
-                params ["_sector", "_sectorpos", "_opforcount"];
-                private ["_spawncivs", "_building_ai_max", "_infsquad", "_building_range", "_local_capture_size", 
-                          "_iedcount", "_vehtospawn", "_managed_units", "_squad1", "_squad2", "_squad3", "_squad4", 
-                          "_minimum_building_positions", "_sector_despawn_tickets", "_maximum_additional_tickets", 
-                          "_popfactor", "_guerilla"];
+                params ["_sectorType", "_sector", "_sectorpos", "_opforcount"];
+                private ["_spawncivs", "_building_ai_max", "_building_range", "_local_capture_size", 
+                          "_iedcount", "_vehtospawn", "_managed_units", "_minimum_building_positions", "_sector_despawn_tickets", "_maximum_additional_tickets", 
+                          "_popfactor", "_guerilla", "_infSquadCount", "_squadRoles"];
                 
                 // Initialize variables with default values
                 _spawncivs = false;
                 _building_ai_max = 0;
-                _infsquad = "army";
                 _building_range = 50;
                 _local_capture_size = GRLIB_capture_size;
                 _iedcount = 0;
                 _vehtospawn = [];
                 _managed_units = [];
-                _squad1 = [];
-                _squad2 = [];
-                _squad3 = [];
-                _squad4 = [];
                 _minimum_building_positions = 5;
                 _sector_despawn_tickets = BASE_TICKETS;
                 _maximum_additional_tickets = (KP_liberation_delayDespawnMax * 60 / SECTOR_TICK_TIME);
                 _popfactor = 1;
                 _guerilla = false;
+                _infSquadCount = 0;
+                _squadRoles = [];
                 
                 if (GRLIB_unitcap < 1) then {_popfactor = GRLIB_unitcap;};
                 
+                // Temp variable to track if militia compositions should be considered (based on old _infsquad logic)
+                private _useMilitiaComps = false;
+                
                 // Different sector type configurations
-                if (_sector in sectors_bigtown) then {
-                    if (combat_readiness < 30) then {_infsquad = "militia";};
-                    
-                    _squad1 = ([_infsquad] call KPLIB_fnc_getSquadComp);
-                    _squad2 = ([_infsquad] call KPLIB_fnc_getSquadComp);
-                    if (GRLIB_unitcap >= 1) then {_squad3 = ([_infsquad] call KPLIB_fnc_getSquadComp);};
-                    if (GRLIB_unitcap >= 1.5) then {_squad4 = ([_infsquad] call KPLIB_fnc_getSquadComp);};
-                    
-                    _vehtospawn = [(selectRandom militia_vehicles),(selectRandom militia_vehicles)];
-                    if ((random 100) > (66 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
-                    if ((random 100) > (50 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
-                    if (_infsquad == "army") then {
-                        _vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);
-                        _vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);
-                        if ((random 100) > (33 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
-                    };
-                    
-                    _spawncivs = true;
-                    
-                    if (((random 100) <= KP_liberation_resistance_sector_chance) && (([] call KPLIB_fnc_crGetMulti) > 0)) then {
-                        _guerilla = true;
-                    };
-                    
-                    _building_ai_max = round (50 * _popfactor);
-                    _building_range = 200;
-                    _local_capture_size = _local_capture_size * 1.4;
-                    
-                    if (KP_liberation_civ_rep < 0) then {
-                        _iedcount = round (2 + (ceil (random 4)) * (round ((KP_liberation_civ_rep * -1) / 33)) * GRLIB_difficulty_modifier);
-                    } else {
-                        _iedcount = 0;
-                    };
-                    if (_iedcount > 16) then {_iedcount = 16};
-                };
-                
-                if (_sector in sectors_capture) then {
-                    if (combat_readiness < 50) then {_infsquad = "militia";};
-                    
-                    _squad1 = ([_infsquad] call KPLIB_fnc_getSquadComp);
-                    if (GRLIB_unitcap >= 1.25) then {_squad2 = ([_infsquad] call KPLIB_fnc_getSquadComp);};
-                    
-                    if ((random 100) > (66 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
-                    if ((random 100) > (33 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
-                    if (_infsquad == "army") then {
-                        _vehtospawn pushback (selectRandom militia_vehicles);
-                        if ((random 100) > (33 / GRLIB_difficulty_modifier)) then {
+                switch (_sectorType) do {
+                    case "bigtown": {
+                        if (combat_readiness < 30) then {_useMilitiaComps = true;};
+                        _infSquadCount = 2;
+                        if (GRLIB_unitcap >= 1) then { _infSquadCount = _infSquadCount + 1; };
+                        if (GRLIB_unitcap >= 1.5) then { _infSquadCount = _infSquadCount + 1; };
+                        // Role Assignment
+                        if (_infSquadCount >= 1) then { _squadRoles pushBack "GARRISON_CENTER"; };
+                        if (_infSquadCount >= 2) then { _squadRoles pushBack "PATROL_INNER"; };
+                        if (_infSquadCount >= 3) then { _squadRoles pushBack "PATROL_OUTER"; };
+                        if (_infSquadCount >= 4) then { _squadRoles pushBack "CAMP_SECTOR"; };
+                        
+                        _vehtospawn = [(selectRandom militia_vehicles),(selectRandom militia_vehicles)];
+                        if ((random 100) > (66 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
+                        if ((random 100) > (50 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
+                        if (!_useMilitiaComps) then { // Replaces _infsquad == "army"
                             _vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);
-                            _squad3 = ([_infsquad] call KPLIB_fnc_getSquadComp);
+                            _vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);
+                            if ((random 100) > (33 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
                         };
+                        _spawncivs = true;
+                        if (((random 100) <= KP_liberation_resistance_sector_chance) && (([] call KPLIB_fnc_crGetMulti) > 0)) then { _guerilla = true; };
+                        _building_ai_max = round (50 * _popfactor);
+                        _building_range = 200;
+                        _local_capture_size = _local_capture_size * 1.4;
+                        if (KP_liberation_civ_rep < 0) then { _iedcount = round (2 + (ceil (random 4)) * (round ((KP_liberation_civ_rep * -1) / 33)) * GRLIB_difficulty_modifier); } else { _iedcount = 0; };
+                        if (_iedcount > 16) then {_iedcount = 16};
                     };
-                    
-                    _spawncivs = true;
-                    
-                    if (((random 100) <= KP_liberation_resistance_sector_chance) && (([] call KPLIB_fnc_crGetMulti) > 0)) then {
-                        _guerilla = true;
+                    case "capture": {
+                        _spawncivs = true;
+                        _infsquad = "garrison"; // Not directly used now, roles are
+                        _minimum_building_positions = 5;
+                        _building_range = GRLIB_capture_size;
+                        _building_ai_max = round (6 * _popfactor); // Still used for old building garrison? Check usage
+                        _iedcount = round (8 * GRLIB_difficulty_modifier * GRLIB_asym_chance);
+
+                        // Determine infantry squad count
+                        _infSquadCount = 1;
+                        if (GRLIB_unitcap >= 0.75) then { _infSquadCount = _infSquadCount + 1; };
+                        if (GRLIB_unitcap >= 1.25) then { _infSquadCount = _infSquadCount + 1; };
+                        if (random 100 < (30 * GRLIB_difficulty_modifier)) then {
+                            _infSquadCount = _infSquadCount + 1;
+                        };
+
+                        // *** Ensure minimum of 3 squads for capture sectors ***
+                        _infSquadCount = _infSquadCount max 3;
+
+                        // Assign roles based on the count
+                        _squadRoles = ["GARRISON_CENTER"];
+                        if (_infSquadCount >= 2) then { _squadRoles pushBack "PATROL_INNER"; };
+                        if (_infSquadCount >= 3) then { _squadRoles pushBack "CAMP_SECTOR"; }; // Maybe another patrol?
+                        if (_infSquadCount >= 4) then { _squadRoles pushBack "GARRISON_OUTER"; }; // Add outer garrison if high count
+                        
+                        if ((random 100) > (66 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
+                        if ((random 100) > (33 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback (selectRandom militia_vehicles);};
+                        if (!_useMilitiaComps) then { // Replaces _infsquad == "army"
+                            _vehtospawn pushback (selectRandom militia_vehicles);
+                            if ((random 100) > (33 / GRLIB_difficulty_modifier)) then { _vehtospawn pushBack ([] call KPLIB_fnc_getAdaptiveVehicle); };
+                        };
+                        _spawncivs = true;
+                        if (((random 100) <= KP_liberation_resistance_sector_chance) && (([] call KPLIB_fnc_crGetMulti) > 0)) then { _guerilla = true; };
+                        _building_ai_max = round ((floor (18 + (round (combat_readiness / 10 )))) * _popfactor);
+                        _building_range = 120;
                     };
-                    
-                    _building_ai_max = round ((floor (18 + (round (combat_readiness / 10 )))) * _popfactor);
-                    _building_range = 120;
-                    
-                    if (KP_liberation_civ_rep < 0) then {
-                        _iedcount = round ((ceil (random 4)) * (round ((KP_liberation_civ_rep * -1) / 33)) * GRLIB_difficulty_modifier);
-                    } else {
-                        _iedcount = 0;
+                    case "military": {
+                        _useMilitiaComps = false; // Military always uses army
+                        _infSquadCount = 2;
+                        if (GRLIB_unitcap >= 1.5) then { _infSquadCount = _infSquadCount + 1; };
+                        if ((random 100) > (33 / GRLIB_difficulty_modifier)) then { _infSquadCount = _infSquadCount + 1; };
+                        // Role Assignment
+                        if (_infSquadCount >= 1) then { _squadRoles pushBack "DEFEND_AREA"; };
+                        if (_infSquadCount >= 2) then { _squadRoles pushBack "CAMP_SECTOR"; };
+                        if (_infSquadCount >= 3) then { _squadRoles pushBack "PATROL_OUTER"; };
+                        if (_infSquadCount >= 4) then { _squadRoles pushBack "DEFEND_AREA"; };
+                        
+                        _vehtospawn = [([] call KPLIB_fnc_getAdaptiveVehicle),([] call KPLIB_fnc_getAdaptiveVehicle)];
+                        if ((random 100) > (33 / GRLIB_difficulty_modifier)) then { _vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle); };
+                        if ((random 100) > (66 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
+                        _spawncivs = false;
+                        _building_ai_max = round ((floor (18 + (round (combat_readiness / 4 )))) * _popfactor);
+                        _building_range = 120;
                     };
-                    if (_iedcount > 12) then {_iedcount = 12};
+                    case "factory": {
+                        if (combat_readiness < 40) then {_useMilitiaComps = true;};
+                        _infSquadCount = 1;
+                        if (GRLIB_unitcap >= 1.25) then { _infSquadCount = _infSquadCount + 1; };
+                        // Role Assignment
+                        if (_infSquadCount >= 1) then { _squadRoles pushBack "DEFEND_AREA"; };
+                        if (_infSquadCount >= 2) then { _squadRoles pushBack "PATROL_INNER"; };
+
+                        if ((random 100) > 66) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
+                        if ((random 100) > 33) then {_vehtospawn pushback (selectRandom militia_vehicles);};
+                        _spawncivs = false;
+                        if (((random 100) <= KP_liberation_resistance_sector_chance) && (([] call KPLIB_fnc_crGetMulti) > 0)) then { _guerilla = true; };
+                        _building_ai_max = round ((floor (18 + (round (combat_readiness / 10 )))) * _popfactor);
+                        _building_range = 120;
+                        if (KP_liberation_civ_rep < 0) then { _iedcount = round ((ceil (random 3)) * (round ((KP_liberation_civ_rep * -1) / 33)) * GRLIB_difficulty_modifier); } else { _iedcount = 0; };
+                        if (_iedcount > 8) then {_iedcount = 8};
+                    };
+                    case "tower": {
+                        _useMilitiaComps = false; // Towers always use army?
+                        _infSquadCount = 1;
+                        if (combat_readiness > 30) then { _infSquadCount = _infSquadCount + 1; };
+                        if (GRLIB_unitcap >= 1.5) then { _infSquadCount = _infSquadCount + 1; };
+                        // Role Assignment
+                        if (_infSquadCount >= 1) then { _squadRoles pushBack "GARRISON_CENTER"; };
+                        if (_infSquadCount >= 2) then { _squadRoles pushBack "DEFEND_AREA"; };
+                        if (_infSquadCount >= 3) then { _squadRoles pushBack "PATROL_OUTER"; };
+                        
+                        if((random 100) > 95) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
+                        _spawncivs = false;
+                        _building_ai_max = 0;
+                    };
+                    default {
+                        // Default case - assign 1 default patrol
+                        _infSquadCount = 1;
+                        _squadRoles = ["PATROL_DEFAULT"];
+                        _building_ai_max = round (20 * _popfactor);
+                        _building_range = 100;
+                        _local_capture_size = GRLIB_capture_size;
+                    };
                 };
                 
-                if (_sector in sectors_military) then {
-                    _squad1 = ([] call KPLIB_fnc_getSquadComp);
-                    _squad2 = ([] call KPLIB_fnc_getSquadComp);
-                    if (GRLIB_unitcap >= 1.5) then {_squad3 = ([] call KPLIB_fnc_getSquadComp);};
-                    
-                    _vehtospawn = [([] call KPLIB_fnc_getAdaptiveVehicle),([] call KPLIB_fnc_getAdaptiveVehicle)];
-                    if ((random 100) > (33 / GRLIB_difficulty_modifier)) then {
-                        _vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);
-                        _squad4 = ([] call KPLIB_fnc_getSquadComp);
-                    };
-                    if ((random 100) > (66 / GRLIB_difficulty_modifier)) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
-                    
-                    _spawncivs = false;
-                    
-                    _building_ai_max = round ((floor (18 + (round (combat_readiness / 4 )))) * _popfactor);
-                    _building_range = 120;
+                // Ensure roles list matches the final count
+                if (count _squadRoles > _infSquadCount) then {
+                     _squadRoles = _squadRoles select [0, _infSquadCount];
                 };
-                
-                if (_sector in sectors_factory) then {
-                    if (combat_readiness < 40) then {_infsquad = "militia";};
-                    
-                    _squad1 = ([_infsquad] call KPLIB_fnc_getSquadComp);
-                    if (GRLIB_unitcap >= 1.25) then {_squad2 = ([_infsquad] call KPLIB_fnc_getSquadComp);};
-                    
-                    if ((random 100) > 66) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
-                    if ((random 100) > 33) then {_vehtospawn pushback (selectRandom militia_vehicles);};
-                    
-                    _spawncivs = false;
-                    
-                    if (((random 100) <= KP_liberation_resistance_sector_chance) && (([] call KPLIB_fnc_crGetMulti) > 0)) then {
-                        _guerilla = true;
-                    };
-                    
-                    _building_ai_max = round ((floor (18 + (round (combat_readiness / 10 )))) * _popfactor);
-                    _building_range = 120;
-                    
-                    if (KP_liberation_civ_rep < 0) then {
-                        _iedcount = round ((ceil (random 3)) * (round ((KP_liberation_civ_rep * -1) / 33)) * GRLIB_difficulty_modifier);
-                    } else {
-                        _iedcount = 0;
-                    };
-                    if (_iedcount > 8) then {_iedcount = 8};
-                };
-                
-                if (_sector in sectors_tower) then {
-                    _squad1 = ([] call KPLIB_fnc_getSquadComp);
-                    if (combat_readiness > 30) then {_squad2 = ([] call KPLIB_fnc_getSquadComp);};
-                    if (GRLIB_unitcap >= 1.5) then {_squad3 = ([] call KPLIB_fnc_getSquadComp);};
-                    
-                    if((random 100) > 95) then {_vehtospawn pushback ([] call KPLIB_fnc_getAdaptiveVehicle);};
-                    
-                    _spawncivs = false;
-                    
-                    _building_ai_max = 0;
+                while {count _squadRoles < _infSquadCount} do {
+                    _squadRoles pushBack "PATROL_DEFAULT"; // Add default patrols if count exceeds defined roles
                 };
                 
                 _vehtospawn = _vehtospawn select {!(isNil "_x")};
                 
                 if (KP_liberation_sectorspawn_debug > 0) then {
-                    [format ["Sector %1 (%2) - manage_one_sector calculated -> _infsquad: %3 - _squad1: %4 - _squad2: %5 - _squad3: %6 - _squad4: %7 - _vehtospawn: %8 - _building_ai_max: %9", 
-                    (markerText _sector), _sector, _infsquad, (count _squad1), (count _squad2), (count _squad3), (count _squad4), (count _vehtospawn), _building_ai_max], "SECTORSPAWN"] remoteExecCall ["KPLIB_fnc_log", 2];
+                    [format ["Sector %1 (%2) - manage_one_sector calculated -> Squad Roles: %3 (Count: %4) - Vehicles: %5 - Building AI: %6", 
+                    (markerText _sector), _sector, _squadRoles, _infSquadCount, (count _vehtospawn), _building_ai_max], "SECTORSPAWN"] remoteExecCall ["KPLIB_fnc_log", 2];
                 };
                 
                 if (_building_ai_max > 0 && GRLIB_adaptive_opfor) then {
@@ -241,17 +247,27 @@ if (isNil "KPLIB_sectors_in_transition") then {
                 };
                 
                 // Return all the sector configuration variables as an array
-                [_spawncivs, _building_ai_max, _infsquad, _building_range, _local_capture_size, _iedcount, 
-                 _vehtospawn, _managed_units, _squad1, _squad2, _squad3, _squad4, _minimum_building_positions, 
-                 _sector_despawn_tickets, _maximum_additional_tickets, _popfactor, _guerilla]
+                [_spawncivs, _building_ai_max, _building_range, _local_capture_size, _iedcount, 
+                 _vehtospawn, _minimum_building_positions, _sector_despawn_tickets, _maximum_additional_tickets, _popfactor, _guerilla, 
+                 _infSquadCount, _squadRoles]
             };
             
+            // Determine Sector Type
+            private _sectorType = "unknown";
+            if (_sector in sectors_bigtown) then { _sectorType = "bigtown"; }
+            else { if (_sector in sectors_capture) then { _sectorType = "capture"; }
+            else { if (_sector in sectors_military) then { _sectorType = "military"; }
+            else { if (_sector in sectors_factory) then { _sectorType = "factory"; }
+            else { if (_sector in sectors_tower) then { _sectorType = "tower"; }; }; }; }; };
+            
             // Configure sector based on its type
-            private _sectorConfig = [_sector, _sectorpos, _opforcount] call _fnc_configureSector;
-            _sectorConfig params ["_spawncivs", "_building_ai_max", "_infsquad", "_building_range", "_local_capture_size", 
-                                "_iedcount", "_vehtospawn", "_managed_units", "_squad1", "_squad2", "_squad3", "_squad4", 
-                                "_minimum_building_positions", "_sector_despawn_tickets", "_maximum_additional_tickets", 
-                                "_popfactor", "_guerilla"];
+            private _sectorConfig = [_sectorType, _sector, _sectorpos, _opforcount] call _fnc_configureSector;
+            _sectorConfig params ["_spawncivs", "_building_ai_max", "_building_range", "_local_capture_size", 
+                                "_iedcount", "_vehtospawn", "_minimum_building_positions", "_sector_despawn_tickets", "_maximum_additional_tickets", 
+                                "_popfactor", "_guerilla", "_infSquadCount", "_squadRoles"];
+            
+            // Initialize managed_units here
+            private _managed_units = [];
             
             // Check for persistent units first - moved variable declaration outside
             private _hasPersistentUnits = false;
@@ -442,16 +458,22 @@ if (isNil "KPLIB_sectors_in_transition") then {
                                     // Set group behavior
                                     _vehGroup setBehaviour "AWARE";
                                     _vehGroup setCombatMode "YELLOW";
-                                    _vehGroup setSpeedMode "NORMAL";
                                     _vehGroup enableAttack true;
                                     
                                     // Make sure crew follows leader
                                     {_x doFollow (leader _vehGroup)} forEach (units _vehGroup);
                                     
-                                    // Apply AI with sector marker position - use specialized vehicle patrol function
-                                    [_vehGroup, markerPos _sector, GRLIB_sector_size * 0.75] call KPLIB_fnc_applyVehiclePatrol;
-                                    if (KP_liberation_debug) then {
-                                        diag_log format ["[KPLIB] Applied vehicle patrol for %1 in sector %2", typeOf _vehicle, _sector];
+                                    // 50/50 chance to apply patrol waypoints
+                                    if (random 1 > 0.5) then {
+                                        // Apply AI with sector marker position - use specialized vehicle patrol function
+                                        [_vehGroup, markerPos _sector, GRLIB_sector_size * 0.75] call KPLIB_fnc_applyVehiclePatrol;
+                                        if (KP_liberation_debug) then {
+                                            diag_log format ["[KPLIB] Applied vehicle patrol for %1 in sector %2", typeOf _vehicle, _sector];
+                                        };
+                                    } else {
+                                        if (KP_liberation_debug) then {
+                                            diag_log format ["[KPLIB] Skipped vehicle patrol waypoints for %1 in sector %2", typeOf _vehicle, _sector];
+                                        };
                                     };
                                 } else {
                                     if (KP_liberation_debug) then {
@@ -487,84 +509,188 @@ if (isNil "KPLIB_sectors_in_transition") then {
                 _managed_units = [_sectorpos, _vehtospawn, _managed_units] call _fnc_spawnVehicles;
                 
                 // Spawn building squad if buildings available
-                if (_building_ai_max > 0) then {
-                    _allbuildings = (nearestObjects [_sectorpos, ["House"], _building_range]) select {alive _x};
-                    _buildingpositions = [];
-                    {
-                        _buildingpositions = _buildingpositions + ([_x] call BIS_fnc_buildingPositions);
-                    } forEach _allbuildings;
-                    
-                    if (KP_liberation_sectorspawn_debug > 0) then {
-                        [format ["Sector %1 (%2) - manage_one_sector found %3 building positions", (markerText _sector), _sector, (count _buildingpositions)], "SECTORSPAWN"] remoteExecCall ["KPLIB_fnc_log", 2];
-                    };
-                    
-                    if (count _buildingpositions > _minimum_building_positions) then {
-                        _managed_units = _managed_units + ([_infsquad, _building_ai_max, _buildingpositions, _sector] call KPLIB_fnc_spawnBuildingSquad);
-                    };
-                };
+                // DISABLED - Replaced by new squad spawning and AI behavior
                 
                 _managed_units = _managed_units + ([_sectorpos] call KPLIB_fnc_spawnMilitaryPostSquad);
                 
-                // Spawn regular squads
-                if (count _squad1 > 0) then {
-                    private _grp = [_sector, _squad1] call KPLIB_fnc_spawnRegularSquad;
-                    
-                    // Validate group before adding waypoints
-                    if (!isNull _grp && {count units _grp > 0}) then {
-                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
+                // --- Check for Overwatch Position BEFORE Spawning Regular Squads ---
+                private _overwatchPos = [_sectorpos, 600, 200, 5, _sectorpos] call lambs_main_fnc_findOverwatch;
+                if (!(_overwatchPos isEqualTo [0,0,0]) && {_overwatchPos distance2D _sectorpos > 50}) then {
+                    // Randomly choose comp size
+                    private _overwatchCompVar = selectRandom ["KPLIB_o_fireteamAssault", "KPLIB_o_squadStd"];
+
+                    // Spawn the overwatch squad
+                    private _spawnResult = [_overwatchCompVar, _overwatchPos] call KPLIB_fnc_spawnSquadHC;
+                    private _overwatchGroup = _spawnResult select 0;
+                    private _overwatchOwnerID = _spawnResult select 1;
+
+                    if (!isNull _overwatchGroup) then {
+                        private _groupNetID = netId _overwatchGroup;
+                        _overwatchOwnerID = groupOwner _overwatchGroup;
+                        // Assign behavior with position override
+                        [_groupNetID, _sector, "DEFEND_AREA", _overwatchPos] remoteExecCall ["KPLIB_fnc_applyAIBehavior", _overwatchOwnerID];
                     } else {
-                        if (KP_liberation_debug) then {
-                            diag_log format ["[KPLIB] Invalid group for squad1 in sector %1", _sector];
-                        };
+                        diag_log format ["[KPLIB] Sector %1: ERROR - Failed to spawn Overwatch squad (%2) at %3", _sector, _overwatchCompVar, _overwatchPos];
                     };
-                    
-                    _managed_units = _managed_units + (units _grp);
+                } else {
+                    // diag_log format ["[KPLIB] Sector %1: No suitable overwatch position found.", _sector];
                 };
+                // --- END Overwatch Check ---
                 
-                if (count _squad2 > 0) then {
-                    private _grp = [_sector, _squad2] call KPLIB_fnc_spawnRegularSquad;
-                    
-                    // Validate group before adding waypoints
-                    if (!isNull _grp && {count units _grp > 0}) then {
-                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
-                    } else {
-                        if (KP_liberation_debug) then {
-                            diag_log format ["[KPLIB] Invalid group for squad2 in sector %1", _sector];
+                // --- START NEW Infantry Spawning Logic (Generalized Prioritization) ---
+                if (count _squadRoles > 0) then {
+
+                    // --- START Role & Composition Prioritization Logic ---
+                    private _roleCompInfo = []; // Array to store [role, compVar, size]
+                    private _validCompVars = []; // Just the composition variable names
+
+                    // 1. Gather Composition Info for each Role
+                    {
+                        private _role = _x;
+                        private _compVar = [_sector, _role, _sectorType] call KPLIB_fnc_selectSquadComposition;
+                        if !(isNil "_compVar" || {_compVar == ""} || {isNil {missionNamespace getVariable _compVar}}) then {
+                            private _compArray = missionNamespace getVariable [_compVar, []];
+                            private _compSize = count _compArray;
+                            _roleCompInfo pushBack [_role, _compVar, _compSize];
+                            _validCompVars pushBack _compVar; // Keep track of valid compVars separately
+                        } else {
+                           _roleCompInfo pushBack [_role, nil, 0]; // Mark as invalid if compVar is bad
                         };
+                    } forEach _squadRoles;
+
+                    // Ensure we only consider roles with valid compositions for assignment matching
+                    private _assignableRoles = _roleCompInfo select {!isNil (_x select 1)};
+                    if (count _assignableRoles != count _squadRoles) then {
+                         diag_log format ["[KPLIB] Sector %1: WARNING - Mismatch between requested roles (%2) and valid compositions found (%3). Proceeding with valid ones.", _sector, count _squadRoles, count _assignableRoles];
+                         // Potentially problematic if KPLIB_fnc_selectSquadComposition fails, but we proceed.
                     };
                     
-                    _managed_units = _managed_units + (units _grp);
-                };
-                
-                if (count _squad3 > 0) then {
-                    private _grp = [_sector, _squad3] call KPLIB_fnc_spawnRegularSquad;
-                    
-                    // Validate group before adding waypoints
-                    if (!isNull _grp && {count units _grp > 0}) then {
-                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
-                    } else {
-                        if (KP_liberation_debug) then {
-                            diag_log format ["[KPLIB] Invalid group for squad3 in sector %1", _sector];
+                    // 2. Separate Compositions by Size Preference
+                    private _largeCompVars = [];
+                    private _smallCompVars = [];
+                    {
+                        private _size = _x select 2;
+                        private _compVar = _x select 1;
+                        if (_size >= 8) then {
+                            _largeCompVars pushBack _compVar;
+                        } else {
+                            _smallCompVars pushBack _compVar;
                         };
-                    };
-                    
-                    _managed_units = _managed_units + (units _grp);
-                };
-                
-                if (count _squad4 > 0) then {
-                    private _grp = [_sector, _squad4] call KPLIB_fnc_spawnRegularSquad;
-                    
-                    // Validate group before adding waypoints
-                    if (!isNull _grp && {count units _grp > 0}) then {
-                        [_grp, _sectorpos, "patrol", GRLIB_sector_size * 0.75, _sector] call KPLIB_fnc_applySquadAI;
-                    } else {
-                        if (KP_liberation_debug) then {
-                            diag_log format ["[KPLIB] Invalid group for squad4 in sector %1", _sector];
+                    } forEach _assignableRoles; // Use assignableRoles which only has valid compVars
+
+                    // Shuffle to add randomness within size categories
+                    _largeCompVars = [_largeCompVars] call CBA_fnc_shuffle;
+                    _smallCompVars = [_smallCompVars] call CBA_fnc_shuffle;
+
+                    // 3. Define Role Priority Order
+                    // Roles not listed here will be handled as 'other'/'lowest' priority.
+                    private _rolePriority = [
+                        "GARRISON_CENTER",
+                        "CAMP_SECTOR",
+                        "DEFEND_AREA",
+                        "PATROL_INNER",
+                        "PATROL_OUTER",
+                        "PATROL_DEFAULT"
+                        // Add other specific roles here if they need priority ranking
+                    ];
+                    private _highPriorityDefensive = ["GARRISON_CENTER", "CAMP_SECTOR", "DEFEND_AREA"];
+                    private _lowPriorityPatrol = ["PATROL_INNER", "PATROL_OUTER", "PATROL_DEFAULT"];
+
+                    // 4. Assign Roles to Compositions based on Priority
+                    private _assignments = createHashMap; // Stores: role => assignedCompVar
+                    private _rolesToAssign = +_squadRoles; // Create a mutable copy
+
+                    // --- Function to attempt assignment ---
+                    private _fnc_tryAssign = {
+                        params ["_role", "_preferredCompList", "_fallbackCompList", "_assignments"];
+                        private _assignedCompVar = nil;
+                        
+                        if (count _preferredCompList > 0) then {
+                            _assignedCompVar = _preferredCompList deleteAt 0; // Take from preferred list
+                        } else {
+                            if (count _fallbackCompList > 0) then {
+                                _assignedCompVar = _fallbackCompList deleteAt 0; // Take from fallback list
+                            } else {
+                                diag_log format ["[KPLIB] Sector %1: WARNING - No compositions left to assign role '%2'", _sector, _role];
+                            };
                         };
+                        
+                        if !(isNil "_assignedCompVar") then {
+                            _assignments set [_role, _assignedCompVar];
+                        };
+                        _assignedCompVar // Return compVar or nil
                     };
-                    
-                    _managed_units = _managed_units + (units _grp);
+                    // --- End Function ---
+
+                    // Iterate through priority list
+                    {
+                        private _currentRole = _x;
+                        if (_currentRole in _rolesToAssign) then { // Check if this role needs assignment
+                            private _assignedCompVar = nil;
+                             if (_currentRole in _highPriorityDefensive) then {
+                                _assignedCompVar = [_currentRole, _largeCompVars, _smallCompVars, _assignments] call _fnc_tryAssign;
+                            };
+                            if (isNil "_assignedCompVar" && {_currentRole in _lowPriorityPatrol}) then { // Check if not already assigned
+                                _assignedCompVar = [_currentRole, _smallCompVars, _largeCompVars, _assignments] call _fnc_tryAssign;
+                            };
+                            
+                            // If a composition was successfully assigned in this iteration, remove the role from the list
+                            if !(isNil "_assignedCompVar") then {
+                                _rolesToAssign = _rolesToAssign - [_currentRole];
+                            };
+                        };
+                    } forEach _rolePriority;
+
+                    // Assign any remaining roles (those not in the priority list or left over)
+                    if (count _rolesToAssign > 0) then {
+                        private _remainingComps = _largeCompVars + _smallCompVars; // Combine remaining comps, large first
+                         {
+                            private _role = _x;
+                            if (count _remainingComps > 0) then {
+                                private _compVar = _remainingComps deleteAt 0;
+                                _assignments set [_role, _compVar];
+                            } else {
+                                diag_log format ["[KPLIB] Sector %1: ERROR - Ran out of compositions while assigning leftover role '%2'.", _sector, _role];
+                                _assignments set [_role, nil]; // Mark as unassignable
+                            };
+                        } forEach _rolesToAssign;
+                    };
+                    // --- END Role & Composition Prioritization Logic ---
+
+
+                    // --- START Spawning Loop (Using Assignments) ---
+                    {
+                        private _roleIndex = _forEachIndex;
+                        private _role = _x; // Get role from original _squadRoles list
+
+                        // Get the composition variable assigned to this role
+                        private _compositionVar = _assignments getOrDefault [_role, nil];
+
+                        if (isNil "_compositionVar") then {
+                             diag_log format ["[KPLIB] Sector %1: ERROR - No composition assigned for role '%2' at index %3. Skipping spawn.", _sector, _role, _roleIndex];
+                             continue; // Skip to next iteration
+                        };
+                        
+                        // --- Spawn logic using _role and _compositionVar ---
+                        private ["_spawnResult", "_group", "_ownerID"];
+                        _spawnResult = [_compositionVar, _sector] call KPLIB_fnc_spawnSquadHC;
+                        _group = _spawnResult select 0;
+                        _ownerID = _spawnResult select 1;
+
+                        if (!isNull _group) then {
+                            private _groupNetID = netId _group;
+                            _ownerID = groupOwner _group;
+                            [_groupNetID, _sector, _role] remoteExecCall ["KPLIB_fnc_applyAIBehavior", _ownerID];
+                        } else {
+                            diag_log format ["[KPLIB] Sector %1: ERROR - KPLIB_fnc_spawnSquadHC returned null group for assigned role %2 with comp %3", _sector, _role, _compositionVar];
+                        };
+                        // --- End of spawn logic ---
+                            
+                    } forEach _squadRoles; // Iterate through the original list of roles for the sector
+                    // --- END Spawning Loop ---
+
                 };
+                // --- END NEW Infantry Spawning Logic ---
                 
                 // Spawn civilians if enabled
                 if (_spawncivs && GRLIB_civilian_activity > 0) then {

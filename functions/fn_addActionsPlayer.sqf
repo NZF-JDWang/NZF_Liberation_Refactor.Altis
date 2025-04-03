@@ -23,20 +23,6 @@ if !(isPlayer _player) exitWith {["No player given"] call BIS_fnc_error; false};
 
 if (isNil "KP_liberation_resources_global") then {KP_liberation_resources_global = false;};
 
-// Tutorial
-_player addAction [
-    ["<t color='#80FF80'>", localize "STR_TUTO_ACTION", "</t>"] joinString "",
-    {howtoplay = 1;},
-    nil,
-    -700,
-    false,
-    true,
-    "",
-    "
-        alive _originalTarget
-        && {_originalTarget getVariable ['KPLIB_isNearStart', false]}
-    "
-];
 
 // HALO
 _player addAction [
@@ -108,15 +94,35 @@ _player addAction [
     true,
     "",
     "
-        isNull (objectParent _originalTarget)
-        && {alive _originalTarget}
-        && {
+        private _condition1 = isNull (objectParent _originalTarget);
+        private _condition2 = alive _originalTarget;
+        private _condition3 = (
             _originalTarget getVariable ['KPLIB_fobDist', 99999] < 20
             || {_originalTarget getVariable ['KPLIB_isNearArsenal', false]}
-            || {_originalTarget getVariable ['KPLIB_isNearMobRespawn', false]}
+            || {_originalTarget getVariable ['KPLIB_isNearMobRespawn', false]} 
             || {_originalTarget getVariable ['KPLIB_isNearStart', false]}
-        }
-        && {build_confirmed isEqualTo 0}
+            || {(!isNil 'startbase') && {_originalTarget distance2d startbase < 200}}
+        );
+        private _condition4 = (build_confirmed == 0);
+        
+        if ((!isNil 'startbase') && {_originalTarget distance2d startbase < 200}) then {
+            if !(_originalTarget getVariable ['KPLIB_isNearStart', false]) then {
+                diag_log '[KPLIB] [DIAGNOSTIC] Arsenal condition: Near start variable FALSE but direct check TRUE - fixing';
+                _originalTarget setVariable ['KPLIB_isNearStart', true];
+            } else {
+                diag_log '[KPLIB] [DIAGNOSTIC] Arsenal condition: Near start is TRUE';
+            };
+        } else {
+            if (_originalTarget getVariable ['KPLIB_isNearStart', false]) then {
+                diag_log format ['[KPLIB] [DIAGNOSTIC] Arsenal condition: Near start variable TRUE but direct check FALSE. Dist: %1', if (!isNil 'startbase') then {_originalTarget distance2d startbase} else {'startbase nil'}];
+            };
+        };
+        
+        if (!_condition4) then {
+            diag_log format ['[KPLIB] [DIAGNOSTIC] Arsenal condition: build_confirmed=%1', build_confirmed]; 
+        };
+        
+        _condition1 && {_condition2} && {_condition3} && {_condition4}
     "
 ];
 

@@ -205,7 +205,7 @@ private _fnc_spawnNextUnit = {
                 };
                 
                 // This function will handle remote execution if the group is not local
-                [_group, markerPos _sector, "building_defense", GRLIB_sector_size * 0.7, _sector] call KPLIB_fnc_applySquadAI;
+                [_group, _groupOwner, _sector, "building_defense"] call KPLIB_fnc_applyAIBehavior;
                 
                 // Basic commands work across network boundary
                 _group setBehaviour "AWARE";

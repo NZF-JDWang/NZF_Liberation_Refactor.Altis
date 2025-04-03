@@ -72,6 +72,10 @@ diag_log format ["[KPLIB] Sector %1 persistence - Found %2 units in total to pro
                 private _leaderDir = getDir _leader;
                 private _leaderPathDisabled = !(_leader checkAIFeature "PATH");
                 
+                // Get the assigned role stored on the group/leader
+                private _assignedRole = _leader getVariable ["KPLIB_assignedRole", "PATROL_DEFAULT"]; // Default if not set
+                diag_log format ["[KPLIB] Sector %1 persistence - Saving role '%2' for group %3", _sector, _assignedRole, _group];
+                
                 // Save each unit in the group relative to the leader
                 {
                     private _member = _x;
@@ -94,10 +98,11 @@ diag_log format ["[KPLIB] Sector %1 persistence - Found %2 units in total to pro
                 
                 // Add group data to sector units
                 _sectorUnits pushBack ["GROUP", [
-                    _leaderPos,        // Leader's absolute position 
-                    _leaderDir,        // Leader's direction
-                    _leaderPathDisabled, // Leader's PATH status
-                    _groupData         // Group members data
+                    _leaderPos,           // 0: Leader's absolute position 
+                    _leaderDir,           // 1: Leader's direction
+                    _leaderPathDisabled,  // 2: Leader's PATH status
+                    _assignedRole,        // 3: Assigned AI role
+                    _groupData            // 4: Group members data
                 ]];
             };
         } 
@@ -106,12 +111,15 @@ diag_log format ["[KPLIB] Sector %1 persistence - Found %2 units in total to pro
             private _crew = [];
             
             // Save crew information
+            // Only save units actually assigned to a role in the vehicle
             {
-                if (alive _x) then {
+                private _unitInVehicle = _x;
+                // Check if the unit is assigned to a specific role (driver, gunner, commander, or cargo index)
+                if (alive _unitInVehicle && {(_unitInVehicle == driver _unit) || (_unitInVehicle == gunner _unit) || (_unitInVehicle == commander _unit) || (_unitInVehicle in assignedCargo _unit)}) then {
                     _crew pushBack [
-                        typeOf _x,                // Unit type
-                        damage _x,                // Damage
-                        !(_x checkAIFeature "PATH") // Whether PATH is disabled
+                        typeOf _unitInVehicle,             // Unit type
+                        damage _unitInVehicle,             // Damage
+                        !(_unitInVehicle checkAIFeature "PATH") // Whether PATH is disabled
                     ];
                 };
             } forEach (crew _unit);
