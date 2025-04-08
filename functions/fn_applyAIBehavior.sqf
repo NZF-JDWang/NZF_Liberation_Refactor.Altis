@@ -57,12 +57,28 @@ private _taskCenter = if !(_taskCenterOverride isEqualTo [0,0,0]) then {
 
 // Get marker size and calculate effective radius
 private _markerSizeArr = getMarkerSize _sectorName;
-private _markerRadius = 0;
-if (count _markerSizeArr == 2) then {
+private _markerRadius = 0; // Default to 0
+
+// Check if marker size is valid (2-element array of numbers)
+if (typeName _markerSizeArr == "ARRAY" && {count _markerSizeArr == 2} && {typeName (_markerSizeArr select 0) == "SCALAR"} && {typeName (_markerSizeArr select 1) == "SCALAR"}) then {
     _markerRadius = ((_markerSizeArr select 0) + (_markerSizeArr select 1)) / 2; // Average marker radius
+    // Ensure _markerRadius is not NaN or infinite, though unlikely with the checks above
+    if (!finite _markerRadius) then {
+        diag_log format ["[KPLIB] WARNING: Calculated _markerRadius for sector '%1' was not finite (%2). Resetting to 0.", _sectorName, _markerRadius];
+        _markerRadius = 0;
+    };
+} else {
+    diag_log format ["[KPLIB] WARNING: Invalid marker size data received for sector '%1': %2. Defaulting markerRadius to 0.", _sectorName, _markerSizeArr];
+    _markerRadius = 0; // Ensure it's 0 if data is invalid
 };
-private _captureRadius = missionNamespace getVariable ["GRLIB_capture_size", 175]; // Get GRLIB_capture_size, default 175
-private _sectorRadius = [_captureRadius, _markerRadius] call BIS_fnc_max; // Use the larger of capture radius or marker radius
+
+private _captureRadius = missionNamespace getVariable ["GRLIB_capture_size", 175];
+private _sectorRadius = _captureRadius max _markerRadius; // Use the larger of capture radius or marker radius
+// Add a final check for _sectorRadius itself
+if (!finite _sectorRadius) then {
+     diag_log format ["[KPLIB] CRITICAL WARNING: Calculated _sectorRadius for sector '%1' was not finite (%2). Using _captureRadius (%3) as fallback.", _sectorName, _sectorRadius, _captureRadius];
+     _sectorRadius = _captureRadius; // Fallback to capture radius if max calculation failed
+};
 diag_log format ["[KPLIB] fn_applyAIBehavior: Sector %1 - Center: %2, CaptureRadius: %3, MarkerRadius: %4, EffectiveRadius: %5", _sectorName, _taskCenter, _captureRadius, _markerRadius, _sectorRadius];
 
 // Force small groups (3 or fewer units) to patrol instead of using certain roles
@@ -285,7 +301,7 @@ switch (toLower _assignedRole) do {
              private _roughPos = _taskCenter getPos [_patrolRadius, _angle];
              // Find a safe position near the calculated point on the circle
              private _wpPos = [_roughPos, 0, 50, 5, 0, 0.2, 0] call BIS_fnc_findSafePos;
-             if (!isNull _wpPos && !(_wpPos isEqualTo [0,0,0]) && (_wpPos distance2D _roughPos < 100)) then { // Added distance check
+             if (!(_wpPos isEqualTo [0,0,0]) && (_wpPos distance2D _roughPos < 100)) then { // Added distance check
                  _group addWaypoint [_wpPos, 0];
                  _waypointsAdded = _waypointsAdded + 1;
              } else {

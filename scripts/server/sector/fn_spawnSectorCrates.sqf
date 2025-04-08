@@ -34,8 +34,8 @@ if !(_sector in KPLIB_sectorCratesSpawned) then {
     for "_i" from 1 to _amount do {
         while {_spawnPos isEqualTo []} do {
             _j = _j + 1;
-            _spawnPos = ((markerPos _sector) getPos [random 50, random 360]) findEmptyPosition [10, 40, KP_liberation_ammo_crate];
-            if (_j isEqualTo 10) exitWith {};
+            _spawnPos = ((markerPos _sector) getPos [random 75, random 360]) findEmptyPosition [10, 40, KP_liberation_ammo_crate];
+            if (_j isEqualTo 20) exitWith {};
         };
         if !(_spawnPos isEqualTo []) then {
             [selectRandom KPLIB_crates, 100, _spawnpos] call KPLIB_fnc_createCrate;

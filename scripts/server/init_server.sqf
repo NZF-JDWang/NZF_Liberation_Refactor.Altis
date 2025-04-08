@@ -86,7 +86,16 @@ execVM "scripts\server\resources\recalculate_timer.sqf";
 execVM "scripts\server\resources\unit_cap.sqf";
 [] call KPLIB_fnc_monitorSectors;
 
-KPLIB_fsm_sectorMonitor = [] call KPLIB_fnc_sectorMonitor;
+// Start Sector Monitor FSM *after* startgame.sqf and save manager are ready
+[{
+    (!isNil "KPLIB_startgame_complete" && {KPLIB_startgame_complete}) && 
+    (!isNil "KPLIB_saveManager_ready" && {KPLIB_saveManager_ready})
+}, {
+    ["Starting Sector Monitor FSM after startgame and save manager ready", "INIT"] call KPLIB_fnc_log;
+    KPLIB_fsm_sectorMonitor = [] call KPLIB_fnc_sectorMonitor;
+}, []] call CBA_fnc_waitUntilAndExecute;
+
+// KPLIB_fsm_sectorMonitor = [] call KPLIB_fnc_sectorMonitor; // Original direct call commented out
 if (KP_liberation_high_command) then {KPLIB_fsm_highcommand = [] call KPLIB_fnc_highcommand;};
 
 // Select FOB templates

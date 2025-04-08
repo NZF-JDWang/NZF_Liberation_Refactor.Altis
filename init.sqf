@@ -8,7 +8,10 @@ enableSaving [ false, false ];
 if (isDedicated) then {debug_source = "Server";} else {debug_source = name player;};
 
 [] call KPLIB_fnc_initSectors;
-if (!isServer) then {waitUntil {!isNil "KPLIB_initServer"};};
+if (!isServer) then {
+    // Wait for server to finish initializing and broadcast KPLIB_initServer
+    [{ KPLIB_initServer }, {}, [], 30, { diag_log "[Init Client ERROR] Timeout waiting for KPLIB_initServer from server."; }] call CBA_fnc_waitUntilAndExecute;
+};
 [] call compileFinal preprocessFileLineNumbers "scripts\shared\fetch_params.sqf";
 [] call compileFinal preprocessFileLineNumbers "kp_liberation_config.sqf";
 [] call compileFinal preprocessFileLineNumbers "presets\init_presets.sqf";
@@ -63,3 +66,5 @@ if (isServer) then {
 };
 
 kp_liberation_clear_cargo = true;
+
+KPLIB_initVarNamespace = missionNamespace;

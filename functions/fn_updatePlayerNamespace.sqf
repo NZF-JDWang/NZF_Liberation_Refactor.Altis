@@ -18,9 +18,13 @@
         (end)
     
     Author: [NZF] JD Wang
-    Date: 2024-04-03 // Updated during refactor
+    Date: 2024-04-03
 */
+
 #define GET_VAR(var,default) (missionNamespace getVariable [var, default])
+
+// Only run on players
+if (!hasInterface) exitWith {};
 
 // Variables are recalculated each call, so local scope is fine.
 private _fobPos = [0, 0, 0];
@@ -30,18 +34,20 @@ private _isNearArsenal = false;
 private _isNearMobRespawn = false;
 private _isNearStart = false;
 private _nearProd = [];
-private _nearSector = -1;
+private _nearSector = "";
 
 // FOB distance, name and position
 if !(GET_VAR("GRLIB_all_fobs", []) isEqualTo []) then {
     _fobPos = [] call KPLIB_fnc_getNearestFob;
     _fobDist = player distance2d _fobPos;
-    _fobName = ["", ["FOB", [_fobPos] call KPLIB_fnc_getFobName] joinString " "] select (_fobDist < GET_VAR("GRLIB_fob_range", 250)); // Add default for GRLIB_fob_range just in case
+    _fobName = ["", ["FOB", [_fobPos] call KPLIB_fnc_getFobName] joinString " "] select (_fobDist < GET_VAR("GRLIB_fob_range", 250));
 } else {
     _fobPos = [0, 0, 0];
     _fobDist = 99999;
     _fobName = "";
 };
+
+// Update player variables
 player setVariable ["KPLIB_fobDist", _fobDist];
 player setVariable ["KPLIB_fobName", _fobName];
 player setVariable ["KPLIB_fobPos", _fobPos];
@@ -57,43 +63,76 @@ player setVariable [
 ];
 
 // Outside of startbase "safezone"
-// Ensure startbase exists before calculating distance
 if (!isNil "startbase") then {
-    private _distToStart = player distance2d startbase;
-    diag_log format ["[KPLIB] [DIAGNOSTIC] startbase exists, distance: %1", _distToStart];
-    player setVariable ["KPLIB_isAwayFromStart", _distToStart > 1000];
-    // Is near startbase
-    _isNearStart = _distToStart < 200;
-    diag_log format ["[KPLIB] [DIAGNOSTIC] Setting KPLIB_isNearStart to %1", _isNearStart];
+    _isNearStart = (player distance2d startbase) < 200;
+    player setVariable ["KPLIB_isNearStart", _isNearStart];
 } else {
-    diag_log "[KPLIB] [DIAGNOSTIC] startbase is nil! Cannot calculate distance.";
-    player setVariable ["KPLIB_isAwayFromStart", true]; // Default to away if startbase doesn't exist
-    _isNearStart = false; // Default to not near if startbase doesn't exist
+    diag_log "[KPLIB] [WARNING] fn_updatePlayerNamespace - startbase is nil";
+    player setVariable ["KPLIB_isNearStart", false];
 };
-player setVariable ["KPLIB_isNearStart", _isNearStart];
 
-// Is near an arsenal object
-if (GET_VAR("KP_liberation_mobilearsenal", false)) then {
-    // Check nearObjects returns objects >= 8 (buildings/statics)
-    _isNearArsenal = !(((player nearObjects [GET_VAR("Arsenal_typename", ""), 5]) select {getObjectType _x >= 8}) isEqualTo []);
+// Arsenal proximity - handle both array and single object cases
+private _arsenalObjects = GET_VAR("KP_liberation_arsenal", []);
+if (_arsenalObjects isEqualType []) then {
+    {
+        if ((player distance2d _x) < 20) exitWith {_isNearArsenal = true;};
+    } forEach _arsenalObjects;
+} else {
+    if (_arsenalObjects isEqualType objNull && {!isNull _arsenalObjects}) then {
+        _isNearArsenal = (player distance2d _arsenalObjects) < 20;
+    };
 };
 player setVariable ["KPLIB_isNearArsenal", _isNearArsenal];
 
-
-// Is near a mobile respawn
-if (GET_VAR("KP_liberation_mobilerespawn", false)) then {
-    _isNearMobRespawn = !((player nearEntities [[GET_VAR("Respawn_truck_typename", ""), GET_VAR("huron_typename", "")], 10]) isEqualTo []);
+// Mobile respawn proximity - handle both array and single object cases
+private _mobileRespawnObjects = GET_VAR("KP_liberation_mobile_respawn", []);
+if (_mobileRespawnObjects isEqualType []) then {
+    {
+        if ((player distance2d _x) < 20) exitWith {_isNearMobRespawn = true;};
+    } forEach _mobileRespawnObjects;
+} else {
+    if (_mobileRespawnObjects isEqualType objNull && {!isNull _mobileRespawnObjects}) then {
+        _isNearMobRespawn = (player distance2d _mobileRespawnObjects) < 20;
+    };
 };
 player setVariable ["KPLIB_isNearMobRespawn", _isNearMobRespawn];
 
-// Nearest activated sector and possible production data
-_nearSector = [GET_VAR("GRLIB_sector_size", 100)] call KPLIB_fnc_getNearestSector; // Add default for GRLIB_sector_size
-_nearProd = GET_VAR("KP_liberation_production", []) param [GET_VAR("KP_liberation_production", []) findIf {(_x select 1) isEqualTo ([100] call KPLIB_fnc_getNearestSector)}, []]; // Fallback needed? This seems complex. Original logic kept.
-player setVariable ["KPLIB_nearProd", _nearProd]; 
+// Production site proximity
+_nearProd = [];
+private _productionSites = GET_VAR("KP_liberation_production", []);
+if (_productionSites isEqualType []) then {
+    {
+        if (_x isEqualType objNull && {!isNull _x} && {(player distance2d _x) < 20}) then {
+            _nearProd pushBack _x;
+        };
+    } forEach _productionSites;
+};
+player setVariable ["KPLIB_nearProd", _nearProd];
+
+// Sector proximity
+_nearSector = "";
+private _allSectors = GET_VAR("sectors_allSectors", []);
+if (_allSectors isEqualType []) then {
+    {
+        if (_x isEqualType "" && {(player distance2d (markerPos _x)) < 20}) exitWith {
+            _nearSector = _x;
+        };
+    } forEach _allSectors;
+};
 player setVariable ["KPLIB_nearSector", _nearSector];
+
+// Log state changes for debugging
+if (GET_VAR("KP_liberation_debug", false)) then {
+    diag_log format [
+        "[KPLIB] [DIAGNOSTIC] Player state update - fobDist: %1, isNearStart: %2, hasDirectAccess: %3",
+        _fobDist,
+        _isNearStart,
+        player getVariable ["KPLIB_hasDirectAccess", false]
+    ];
+};
 
 // Zeus module synced to player
 player setVariable ["KPLIB_ownedZeusModule", getAssignedCuratorLogic player];
 
-// Update state in Discord rich presence (assuming this function handles nil player gracefully if needed)
+// Update state in Discord rich presence
 [] call KPLIB_fnc_setDiscordState; 

@@ -95,6 +95,11 @@ armor_weight = 33;
 blufor_sectors = [];
 // Enemy combat readiness (0-100)
 combat_readiness = 0;
+// If no save data exists, set default combat readiness based on difficulty
+if (isNil "_saveData") then {
+    combat_readiness = 35 + (10 * GRLIB_difficulty_modifier);
+    publicVariable "combat_readiness";
+};
 // All FOBs
 GRLIB_all_fobs = [];
 // Player permissions data
@@ -293,8 +298,228 @@ if (!isNil "_saveData") then {
         stats_supplies_produced                     = _stats select 36;
         stats_supplies_spent                        = _stats select 37;
         stats_vehicles_recycled                     = _stats select 38;
+
+        // Set load state flags
+        save_is_loaded = true; publicVariable "save_is_loaded";
+        KPLIB_saveManager_ready = true; publicVariable "KPLIB_saveManager_ready"; // Flag: Save loaded and critical vars set
+
+        // Extract weigths from collection array
+        infantry_weight = _weights select 0;
+        armor_weight = _weights select 1;
+        air_weight = _weights select 2;
+
+        // Set correct resistance standing
+        private _resistanceEnemy = [0, 1] select (KP_liberation_civ_rep < 25);
+        private _resistanceFriendly = [0, 1] select (KP_liberation_civ_rep >= -25);
+
+        GRLIB_side_resistance setFriend [GRLIB_side_enemy, _resistanceEnemy];
+        GRLIB_side_enemy setFriend [GRLIB_side_resistance, _resistanceEnemy];
+        GRLIB_side_resistance setFriend [GRLIB_side_friendly, _resistanceFriendly];
+        GRLIB_side_friendly setFriend [GRLIB_side_resistance, _resistanceFriendly];
+
+        if (KP_liberation_civrep_debug > 0) then {[format ["%1 getFriend %2: %3 - %1 getFriend %4: %5", GRLIB_side_resistance, GRLIB_side_enemy, (GRLIB_side_resistance getFriend GRLIB_side_enemy), GRLIB_side_friendly, (GRLIB_side_resistance getFriend GRLIB_side_friendly)], "CIVREP"] call KPLIB_fnc_log;};
+
+        // Apply current date and time
+        if (_dateTime isEqualType []) then {
+            setDate _dateTime;
+        } else {
+            setDate [2045, 6, 6, _dateTime, 0]; // Compatibility for older save data
+        };
+
+        // Create clearances
+        {
+            [_x select 0, _x select 1] call KPLIB_fnc_createClearance;
+        } forEach KP_liberation_clearances;
+
+        // Collection array for all objects which are loaded
+        private _spawnedObjects = [];
+
+        // Spawn all saved objects
+        private _object = objNull;
+        {
+            // Fetch data of saved object
+            _x params ["_class", "_pos", "_vecDir", "_vecUp", ["_hasCrew", false]];
+
+            // This will be removed if we reach a 0.96.7 due to more released Arma 3 DLCs until we finish 0.97.0
+            if !(((_saveData select 0) select 0) isEqualType 0) then {
+                // Pre 0.96.5 compatibility with repair building, as it was replaced by default with a different classname
+                if ((KP_liberation_recycle_building != "Land_CarService_F") && (_class == "Land_CarService_F")) then {
+                    _class = KP_liberation_recycle_building;
+                };
+
+                // Pre 0.96.5 compatibility with air building, as it was replaced by default with a different classname
+                if ((KP_liberation_air_vehicle_building != "Land_Radar_Small_F") && (_class == "Land_Radar_Small_F")) then {
+                    _class = KP_liberation_air_vehicle_building;
+                };
+            };
+
+            // Only spawn, if the classname is still in the presets
+            if ((toLower _class) in KPLIB_classnamesToSave) then {
+
+                // Create object without damage handling and simulation
+                _object = createVehicle [_class, _pos, [], 0, "CAN_COLLIDE"];
+                _object allowdamage false;
+                _object enableSimulation false;
+
+                // Add object to spawned objects collection
+                _spawnedObjects pushBack _object;
+
+                // Reposition spawned object
+                _object setPosWorld _pos;
+                _object setVectorDirAndUp [_vecDir, _vecUp];
+
+                // Process KP object init
+                [_object] call KPLIB_fnc_addObjectInit;
+
+                // Apply kill manager handling, if not excluded
+                if !((toLower _class) in _noKillHandler) then {
+                    _object addMPEventHandler ["MPKilled", {_this spawn kill_manager}];
+                };
+
+                // Set enemy vehicle as captured
+                if ((toLower _class) in KPLIB_o_allVeh_classes) then {
+                    _object setVariable ["KPLIB_captured", true, true];
+                };
+
+                // Set civilian vehicle as seized
+                if (_class in civilian_vehicles) then {
+                    _object setVariable ["KPLIB_seized", true, true];
+                };
+
+                // Determine if cargo should be cleared
+                [_object] call KPLIB_fnc_clearCargo;
+
+                // Add blufor crew, if it had crew or is a UAV
+                if ((unitIsUAV _object) || _hascrew) then {
+                    [_object] call KPLIB_fnc_forceBluforCrew;
+                };
+            };
+        } forEach _objectsToSave;
+
+        // Re-enable physics on the spawned objects
+        {
+            _x enableSimulation true;
+            _x setdamage 0;
+            _x allowdamage true;
+        } forEach _spawnedObjects;
+        ["Saved buildings and vehicles placed", "SAVE"] call KPLIB_fnc_log;
+
+        // Spawn all saved mines
+        private _mine = objNull;
+        {
+            _x params ["_minePos", "_dirAndUp", "_class", "_known"];
+
+            _mine = createVehicle [_class, _minePos, [], 0];
+            _mine setPosWorld _minePos;
+            _mine setVectorDirAndUp _dirAndUp;
+
+            // reveal mine to player side if it was detected
+            if (_known) then {
+                GRLIB_side_friendly revealMine _mine;
+            };
+
+        } forEach _allMines;
+        ["Saved mines placed", "SAVE"] call KPLIB_fnc_log;
+
+        // Spawn saved resource storages and their content
+        {
+            _x params ["_class", "_pos", "_vecDir", "_vecUp", "_supply", "_ammo", "_fuel"];
+
+            // Only spawn, if the classname is still in the presets
+            if ((toLower _class) in KPLIB_classnamesToSave) then {
+
+                // Create object without damage handling and simulation
+                _object = createVehicle [_class, _pos, [], 0, "CAN_COLLIDE"];
+                _object allowdamage false;
+                _object enableSimulation false;
+
+                // Reposition spawned object
+                _object setPosWorld _pos;
+                _object setVectorDirAndUp [_vecDir, _vecUp];
+
+                // Re-enable physics on spawned object
+                _object setdamage 0;
+                _object enableSimulation true;
+                _object allowdamage true;
+
+                // Mark it as FOB storage
+                _object setVariable ["KP_liberation_storage_type", 0, true];
+
+                // Fill storage with saved resources
+                [floor _supply, floor _ammo, floor _fuel, _object] call KPLIB_fnc_fillStorage;
+            };
+        } forEach _resourceStorages;
+        ["Saved FOB storages placed and filled", "SAVE"] call KPLIB_fnc_log;
+
+        // Spawn saved sector storages and their content
+        private _storage = [];
+        {
+            _storage = _x select 3;
+
+            // Spawn storage, if sector has valid storage
+            if ((count _storage) == 3) then {
+                _storage params ["_pos", "_dir", "_vecUp"];
+
+                // Create object without damage handling and simulation
+                _object = createVehicle [KP_liberation_small_storage_building, _pos, [], 0, "CAN_COLLIDE"];
+                _object enableSimulationGlobal false;
+                _object allowdamage false;
+
+                // Reposition spawned object
+                _object setdir _dir;
+                _object setVectorUp _vecUp;
+                _object setPosATL _pos;
+
+                // Re-enable physics on spawned object
+                _object setdamage 0;
+                _object enableSimulation true;
+                _object allowdamage true;
+
+                // Mark it as sector storage
+                _object setVariable ["KP_liberation_storage_type", 1, true];
+
+                // Fill storage
+                [floor (_x select 9), floor (_x select 10), floor (_x select 11), _object] call KPLIB_fnc_fillStorage;
+            };
+        } forEach KP_liberation_production;
+        ["Saved sector storages placed and filled", "SAVE"] call KPLIB_fnc_log;
+
+        // Spawn BLUFOR AI groups
+        // This will be removed if we reach a 0.96.7 due to more released Arma 3 DLCs until we finish 0.97.0
+        private _grp = grpNull;
+        if (((_saveData select 0) select 0) isEqualType 0) then {
+            {
+                _x params ["_spawnPos", "_units"];
+                _grp = createGroup [GRLIB_side_friendly, true];
+                {
+                    [_x, [_spawnPos, _grp] select (_forEachIndex > 0), _grp] call KPLIB_fnc_createManagedUnit;
+                } forEach _units;
+            } forEach _aiGroups;
+        } else {
+            // Pre 0.96.5 compatibility
+            private _pos = [];
+            private _dir = 0;
+            private _unit = objNull;
+            {
+                _grp = createGroup [GRLIB_side_friendly, true];
+                {
+                    _pos = [(_x select 1) select 0, (_x select 1) select 1, ((_x select 1) select 2) + 0.2];
+                    _dir = _x select 2;
+                    _unit = [(_x select 0), _pos, _grp] call KPLIB_fnc_createManagedUnit;
+                    _unit setDir _dir;
+                    _unit setPosATL _pos;
+                } forEach _x;
+            } forEach _aiGroups;
+        };
+        ["Saved AI units placed", "SAVE"] call KPLIB_fnc_log;
+
+        // Spawn all saved sector crates
+        {
+            _x call KPLIB_fnc_createCrate;
+        } forEach _allCrates;
+        ["Saved crates placed", "SAVE"] call KPLIB_fnc_log;
     } else {
-        // --- Compatibility for older save data ---
+        // This is a legacy save from version 1.6, attempt migration
         ["Save data from version: pre 0.96.5", "SAVE"] call KPLIB_fnc_log;
 
         blufor_sectors                              = _saveData select  0;
@@ -341,6 +566,10 @@ if (!isNil "_saveData") then {
         stats_fobs_built                            = _stats select 25;
         stats_fobs_lost                             = _stats select 26;
         stats_readiness_earned                      = _stats select 27;
+
+        // Set load state flags after migration attempt
+        save_is_loaded = true; publicVariable "save_is_loaded";
+        KPLIB_saveManager_ready = true; publicVariable "KPLIB_saveManager_ready"; // Flag: Save loaded/migrated and critical vars set
     };
 
     // Extract weigths from collection array
@@ -559,7 +788,33 @@ if (!isNil "_saveData") then {
     } forEach _allCrates;
     ["Saved crates placed", "SAVE"] call KPLIB_fnc_log;
 } else {
-    ["Save nil", "SAVE"] call KPLIB_fnc_log;
+    // No save data found, initialize defaults
+    ["No save data found. Starting new campaign.", "SAVE"] call KPLIB_fnc_log;
+    
+    // Initialize resources, intel etc.
+    resources_intel = GRLIB_start_intel;
+    // ... other initializations ...
+    
+    // Initialize combat readiness to default start value
+    combat_readiness = GRLIB_start_readiness;
+    
+    // Initialize production based on starting factories
+    // ... existing code ...
+    
+    // Initialize other global variables
+    KP_liberation_civ_rep = 0;
+    KP_liberation_guerilla_strength = 0;
+    // ... etc ...
+
+    // Set load state flags for new game
+    save_is_loaded = true; publicVariable "save_is_loaded"; // Still set true as initialization is complete
+    KPLIB_saveManager_ready = true; publicVariable "KPLIB_saveManager_ready"; // Flag: New game initialized and critical vars set
+    
+    // Clean possible leftovers from previous sessions
+    { deleteVehicle _x; } forEach (entities "KP_liberation_storage_crate");
+    { deleteVehicle _x; } forEach (entities "KP_liberation_intel_crate");
+    { deleteVehicle _x; } forEach (entities "Land_Can_V3_F");
+    { deleteVehicle _x; } forEach (entities "Land_Can_V3_alt_F");
 };
 
 publicVariable "stats_civilian_vehicles_seized";
@@ -601,7 +856,6 @@ if ((_lockedVehCount < (count sectors_military)) && (_lockedVehCount < (count el
 
 publicVariable "GRLIB_vehicle_to_military_base_links";
 publicVariable "GRLIB_permissions";
-save_is_loaded = true; publicVariable "save_is_loaded";
 
 [format ["----- Saved data loaded - Time needed: %1 seconds", diag_tickTime - _start], "SAVE"] call KPLIB_fnc_log;
 

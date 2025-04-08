@@ -1,11 +1,24 @@
-waitUntil {!isNil "KPLIB_initServer"};
+/*
+    File: onPlayerRespawn.sqf
+    Author: [NZF] JD Wang
+    Date: 2024-04-03
+    Last Update: 2024-04-03
+    License: MIT License - http://www.opensource.org/licenses/MIT
+
+    Description:
+        Handles player respawn and ensures proper initialization of player actions and variables.
+*/
 
 params ["_newUnit", "_oldUnit"];
 
-build_confirmed = 0; // Initialize build status
+// Wait for server initialization
+waitUntil {!isNil "KPLIB_initServer"};
+
+// Initialize build status
+build_confirmed = 0;
 
 // Ensure player namespace variables are calculated at least once before adding actions
-if (!isNull player) then { // Safety check
+if (!isNull player) then {
     // Call the full namespace update
     [] call KPLIB_fnc_updatePlayerNamespace;
     
@@ -19,6 +32,7 @@ if (!isNull player) then { // Safety check
     };
 };
 
+// Handle loadout
 if (isNil "GRLIB_respawn_loadout") then {
     removeAllWeapons player;
     removeAllItems player;
@@ -29,14 +43,15 @@ if (isNil "GRLIB_respawn_loadout") then {
     removeGoggles player;
     player linkItem "ItemMap";
     player linkItem "ItemCompass";
-    player linkItem "ItemWatch";
-    player linkItem "ItemRadio";
 } else {
     sleep 4;
     [player, GRLIB_respawn_loadout] call KPLIB_fnc_setLoadout;
 };
 
+// Add player actions with diagnostic logging
+diag_log "[KPLIB] [DIAGNOSTIC] onPlayerRespawn - Adding player actions";
 [] call KPLIB_fnc_addActionsPlayer;
+diag_log "[KPLIB] [DIAGNOSTIC] onPlayerRespawn - Player actions added";
 
 // Support Module handling
 if ([

@@ -88,7 +88,7 @@ private _units = [];
 // If LAMBS is available and multiple towers exist, coordinate defense
 if (count _allPosts > 1) then {
     // Apply AI behavior to the entire group using our unified function
-    [_grp, _owner, _nearestSector, "building_defense"] call KPLIB_fnc_applyAIBehavior;
+    [netId _grp, _nearestSector, "building_defense"] remoteExecCall ["KPLIB_fnc_applyAIBehavior", _owner];
 } else {
     // For a single tower, we're using the individual building_defence_ai script
     // Units are already on the HC through fn_createManagedUnit.sqf

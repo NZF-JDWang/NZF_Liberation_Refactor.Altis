@@ -71,3 +71,10 @@ if (GRLIB_all_fobs isEqualTo []) then {
         _smoke attachTo [_x];
     } forEach KPLIB_startCrates;
 };
+
+// Log sector setup completion
+diag_log format ["[KPLIB] Finished sector initialization - %1 sectors identified", count sectors_allSectors];
+
+// Signal completion for dependent scripts
+KPLIB_startgame_complete = true; 
+publicVariable "KPLIB_startgame_complete";
